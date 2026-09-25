@@ -1,0 +1,21 @@
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><div class="eyebrow">Interaktivni kurs · kod se pokreće u pregledniku</div><h1>Učionica programiranja</h1></div>
+    <div class="status" id="status" aria-live="polite"></div>
+  </header>
+  <div class="layout" id="layout">
+    <nav class="menu" id="menu" aria-label="Lekcije"></nav>
+    <main id="main" tabindex="-1"></main>
+    <aside class="tutor" id="tutor" hidden aria-label="Tutor">
+      <div class="row" style="justify-content:space-between"><h3>Tutor</h3><div class="row"><button class="btn small" id="tStop" hidden>Stani</button><button class="btn small" id="tClose" aria-label="Zatvori tutora">✕</button></div></div>
+      <div class="tmsgs" id="tMsgs"></div>
+      <div class="tform">
+        <div class="tquick" id="tQuick"></div>
+        <textarea id="tIn" rows="2" placeholder="Pitaj šta god ne razumiješ…" aria-label="Pitanje tutoru"></textarea>
+        <button class="btn primary" id="tSend">Pošalji</button>
+      </div>
+    </aside>
+  </div>
+  <button class="btn primary fab" id="tOpen" hidden>💬 Tutor</button>
+</div>

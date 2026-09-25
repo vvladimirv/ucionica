@@ -1,0 +1,10 @@
+{
+  "name": "ucionica",
+  "private": true,
+  "description": "Učionica programiranja — interaktivni kurs (Python, JavaScript, SQL) koji se izvršava u pregledniku i objavljuje kao Claude artefakt.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  }
+}
