@@ -4,9 +4,9 @@
 //   2) node scripts/uvezi.mjs <snimljeni.html>
 //   3) git diff — pregledaj šta je stiglo
 // Skripta na kraju sastavi stranicu iz src/ i provjeri da je identična ulazu.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
-import { sastavi, MODULI, SRC } from './build.mjs';
+import { SRC, sastavi } from './build.mjs';
 
 const ulaz = process.argv[2];
 if (!ulaz) { console.error('Upotreba: node scripts/uvezi.mjs <snimljeni-artefakt.html>'); process.exit(2); }
@@ -37,14 +37,10 @@ if (dijelovi[0] !== '') throw new Error('Skripta ne počinje oznakom modula');
 const moduli = [];
 for (let i = 1; i < dijelovi.length; i += 2) moduli.push({ ime: dijelovi[i], tekst: dijelovi[i + 1] });
 
+// Build spaja module po abecedi imena, pa i stranica mora imati taj redoslijed.
 const imena = moduli.map(m => m.ime);
-const nepoznati = imena.filter(n => !MODULI.includes(n));
-const nedostaju = MODULI.filter(n => !imena.includes(n));
-if (nepoznati.length || nedostaju.length || imena.join() !== MODULI.join()) {
-  console.error('Redoslijed ili spisak modula se razlikuje od MODULI u build.mjs:');
-  console.error('  u stranici:', imena.join(', '));
-  console.error('  u build.mjs:', MODULI.join(', '));
-  console.error('Uskladi MODULI pa pokreni ponovo.');
+if (imena.join() !== [...imena].sort().join()) {
+  console.error('Moduli u stranici nisu po abecedi imena, a build ih tako spaja:\n  ' + imena.join(', '));
   process.exit(1);
 }
 
@@ -52,6 +48,7 @@ mkdirSync(join(SRC, 'js'), { recursive: true });
 writeFileSync(join(SRC, 'head.html'), head);
 writeFileSync(join(SRC, 'stil.css'), stil.tekst);
 writeFileSync(join(SRC, 'tijelo.html'), tijelo);
+for (const f of readdirSync(join(SRC, 'js'))) if (f.endsWith('.js') && !imena.includes(f)) { unlinkSync(join(SRC, 'js', f)); console.log('obrisan (nema ga u stranici): ' + f); }
 for (const m of moduli) writeFileSync(join(SRC, 'js', m.ime), m.tekst);
 
 const ponovo = sastavi();

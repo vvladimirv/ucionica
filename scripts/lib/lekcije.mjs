@@ -2,14 +2,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import vm from 'node:vm';
-import { SRC, MODULI } from '../build.mjs';
+import { SRC, moduli } from '../build.mjs';
 
-export const MODULI_LEKCIJA = MODULI.filter(m => /^\d\d-lekcije-/.test(m));
+export const moduliLekcija = () => moduli().filter(m => /^\d\d-lekcije-/.test(m));
 export const DIJELOVI_IDS = [['py', 'LEKCIJE_PY'], ['js', 'LEKCIJE_JS'], ['sql', 'LEKCIJE_SQL']];
 
 export function ucitajLekcije() {
   const ctx = vm.createContext({});
-  for (const m of [...MODULI_LEKCIJA, 'teme.js']) vm.runInContext(readFileSync(join(SRC, 'js', m), 'utf8'), ctx, { filename: m });
+  for (const m of [...moduliLekcija(), '40-teme.js']) vm.runInContext(readFileSync(join(SRC, 'js', m), 'utf8'), ctx, { filename: m });
   const uzmi = ime => vm.runInContext(`typeof ${ime} !== 'undefined' ? ${ime} : undefined`, ctx);
   return {
     dijelovi: DIJELOVI_IDS.map(([id, ime]) => ({ id, ime, lekcije: uzmi(ime) || [] })),

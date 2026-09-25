@@ -1,5 +1,5 @@
 // ============================================================================
-// Dio 4: teme iz Učionice v3 (TEME, DIA, PUT, LAYER, RJECNIK iz teme.js) — čitanje + kviz.
+// Dio 4: teme iz Učionice v3 (TEME, DIA, PUT, LAYER, RJECNIK iz 40-teme.js) — čitanje + kviz.
 // ============================================================================
 let putI = 0;
 function renderPut() {
