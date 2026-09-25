@@ -144,6 +144,14 @@ table.res th{color:var(--term-dim)}
 .pline .mv button{border:1px solid var(--term-line);background:transparent;color:var(--term-ink);border-radius:6px;width:30px;height:28px;padding:0}
 .pline.ok{outline:2px solid var(--good)} .pline.no{outline:2px solid var(--bad)}
 
+/* okvir sa stranicom (dom) */
+.stage{border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.stage-bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:6px 12px;background:var(--surface2);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.stage-bar span:first-child{text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--ink)}
+.stage-host{display:block;min-height:3.2em}
+.out .info{color:var(--hl-str)}
+#res{display:grid;gap:10px}
+
 /* tutor */
 aside.tutor{position:sticky;top:env(safe-area-inset-top,0px);display:grid;grid-template-rows:auto 1fr auto;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;max-height:calc(100vh - 16px)}
 @media (max-width:1100px){aside.tutor{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(420px,calc(100vw - 32px));max-height:70vh;z-index:20;box-shadow:0 12px 40px rgba(0,0,0,.25)}}

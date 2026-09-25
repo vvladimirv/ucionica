@@ -8,7 +8,10 @@
 //   greska   {kod, linija, obj, ispravno?, pitanje?}
 //   zadatak  {opis(html), pocetak, testovi:[{opis, kod}], nagovjestaji:[], rjesenje, objRj?, poslije?}
 //   kviz     {p, o:[], t, e}
-// jezik: 'python' (podrazumijevano) | 'js' | 'sql' (+ setup: SQL koji pripremi bazu)
+// jezik: 'python' (podrazumijevano) | 'js' (konzola, Worker) | 'dom' (stranica u okviru) | 'sql'
+// setup: za sql SQL koji pripremi bazu, za dom HTML stranice u okviru prije pokretanja koda.
+// Testovi: python assert (IZLAZ, KOD, _sa_vrijednostima); js/dom ocekuj(stvarno, ocekivano, poruka),
+// js još IZLAZ, KOD, saVrijednostima({ime: vrijednost}); dom T.klikni/upisi/posalji/tekst/broj/stranica/IZLAZ.
 // ============================================================================
 const TIPNAZIV = { tekst: 'Objašnjenje', primjer: 'Primjer — klikni na liniju', predvidi: 'Predvidi rezultat', popuni: 'Popuni prazninu', poredaj: 'Poredaj linije', greska: 'Nađi grešku', zadatak: 'Napiši kod', kviz: 'Provjeri razumijevanje' };
 let stepState = {};
@@ -21,12 +24,15 @@ function renderDots() {
 }
 
 function renderLek() {
+  zaustaviDom();
   const lek = findLek(cur.id); const s = lek.koraci[cur.k]; stepState = { s };
   const dio = DIJELOVI.find(d => d.lekcije.includes(lek)); const li = dio.lekcije.indexOf(lek);
   const zadnji = cur.k === lek.koraci.length - 1; const sljedeca = dio.lekcije[li + 1];
-  const dalje = zadnji
-    ? (sljedeca ? `<button class="btn primary" data-go="lek:${sljedeca.id}:0">Sljedeća lekcija: ${esc(sljedeca.naslov)} →</button>` : `<span class="muted small">Kraj ovog dijela ✓</span>`)
-    : `<button class="btn primary" data-go="lek:${lek.id}:${cur.k + 1}">Dalje →</button>`;
+  const sljedeciDio = DIJELOVI.slice(DIJELOVI.indexOf(dio) + 1).find(d => d.lekcije.length);
+  const dalje = !zadnji ? `<button class="btn primary" data-go="lek:${lek.id}:${cur.k + 1}">Dalje →</button>`
+    : sljedeca ? `<button class="btn primary" data-go="lek:${sljedeca.id}:0">Sljedeća lekcija: ${esc(sljedeca.naslov)} →</button>`
+    : sljedeciDio ? `<span class="muted small">Kraj ovog dijela ✓</span><button class="btn primary" data-go="lek:${sljedeciDio.lekcije[0].id}:0">${esc(sljedeciDio.naslov)} →</button>`
+    : `<span class="muted small">Kraj ovog dijela ✓</span>`;
   $('#main').innerHTML = `
     <div class="lhead"><div class="eyebrow">${esc(dio.naslov)} · lekcija ${li + 1}</div><h2>${esc(lek.naslov)}</h2>${lek.cilj ? `<p class="muted">${esc(lek.cilj)}</p>` : ''}<div class="dots" id="dots"></div></div>
     <section class="card"><div class="steptype">Korak ${cur.k + 1}/${lek.koraci.length} · ${TIPNAZIV[s.tip]}</div>${s.naslov ? `<h3>${esc(s.naslov)}</h3>` : ''}<div class="stepbody" id="step"></div></section>
@@ -40,6 +46,7 @@ function renderLek() {
 }
 
 async function pokreni(lang, code, tests, setup, box) {
+  if (lang === 'dom') { const r = await runDom(code, tests, setup, box); stepState.last = r; return r; }
   box.innerHTML = '<div class="out">Pokrećem…' + (lang === 'python' && ENV.py === 'wait' ? ' (prvi put se Python učitava 10–30 s)' : '') + '</div>';
   const r = await RUN[lang](code, tests, setup);
   stepState.last = r;

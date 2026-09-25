@@ -1,6 +1,6 @@
 // ============================================================================
-// Izvršavanje koda u pregledniku: Python (Pyodide), JavaScript (Worker), SQL (sql.js).
-// Svaki runner vraća isti oblik: { ok, out, err, errType, tests: [{ok, m}], tabele? } ili null.
+// Izvršavanje koda u pregledniku: Python (Pyodide) i SQL (sql.js); JavaScript je u 02-izvrsavanje-js.js.
+// Svaki runner vraća isti oblik: { ok, out, err, errType, errLine, tests: [{ok, m}], tabele? } ili null.
 // ============================================================================
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -114,36 +114,6 @@ async function runPy(code, tests = []) {
   return r;
 }
 
-// ---------------------------------------------------------------- JavaScript (Worker, prekid nakon 3 s)
-const JS_WORKER = `
-const fmt = v => typeof v === 'string' ? v : (v === undefined ? 'undefined' : (() => { try { return JSON.stringify(v); } catch (_) { return String(v); } })());
-function jednako(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
-function ocekuj(stvarno, ocekivano, poruka) { if (!jednako(stvarno, ocekivano)) throw new Error((poruka ? poruka + ': ' : '') + 'očekivano ' + fmt(ocekivano) + ', dobijeno ' + fmt(stvarno)); }
-onmessage = e => {
-  const { code, tests } = e.data; const out = [];
-  console.log = (...a) => out.push(a.map(fmt).join(' '));
-  const res = { ok: true, out: '', err: null, errType: null, errLine: null, tests: [] };
-  const body = code + '\\n;return () => [' + tests.map(t => '(() => { try { ' + t.kod + '; return {ok:true,m:""}; } catch (x) { return {ok:false,m:String(x && x.message || x)}; } })').join(',') + '];';
-  let runTests = null;
-  try { runTests = (new Function('ocekuj', 'jednako', body))(ocekuj, jednako); }
-  catch (x) { res.ok = false; res.errType = x && x.name || 'Error'; res.err = (x && x.name ? x.name + ': ' : '') + (x && x.message || String(x)); }
-  res.out = out.join('\\n') + (out.length ? '\\n' : '');
-  if (runTests) { self.IZLAZ = res.out; res.tests = runTests().map(f => f()); }
-  else res.tests = tests.map(() => ({ ok: null, m: 'nije pokrenut (kod ima grešku)' }));
-  postMessage(res);
-};`;
-const jsWorkerUrl = URL.createObjectURL(new Blob([JS_WORKER], { type: 'text/javascript' }));
-function runJs(code, tests = []) {
-  return new Promise(resolve => {
-    let w;
-    try { w = new Worker(jsWorkerUrl); } catch (e) { ENV.js = 'bad'; renderStatus(); resolve(null); return; }
-    const t = setTimeout(() => { w.terminate(); resolve({ ok: false, out: '', err: 'Kod se izvršava predugo (više od 3 s) — vjerovatno beskonačna petlja.', errType: 'Timeout', tests: tests.map(() => ({ ok: null, m: 'prekinuto' })) }); }, 3000);
-    w.onmessage = e => { clearTimeout(t); w.terminate(); resolve(e.data); };
-    w.onerror = e => { clearTimeout(t); w.terminate(); resolve({ ok: false, out: '', err: e.message || 'Greška', errType: 'SyntaxError', tests: tests.map(() => ({ ok: null, m: 'nije pokrenut' })) }); };
-    w.postMessage({ code, tests });
-  });
-}
-
 // ---------------------------------------------------------------- SQL
 let sqlPromise = null;
 function loadSql() {
@@ -184,22 +154,33 @@ async function runSql(code, tests = [], setup = '') {
   db.close();
   return res;
 }
-const RUN = { python: runPy, js: runJs, sql: (c, t, s) => runSql(c, t, s) };
+const RUN = { python: runPy, sql: (c, t, s) => runSql(c, t, s) };   // js i dom dodaje 02-izvrsavanje-js.js
 
-// Objašnjenja grešaka za početnike (ključ = tip greške iz runnera).
+// Objašnjenja grešaka za početnike, po jeziku (ključ = tip greške iz runnera).
 const GRESKE = {
-  NameError: 'Python ne zna za to ime. Najčešće: ime je pogrešno napisano, varijabla se koristi prije nego što je napravljena, ili je tekst napisan bez navodnika.',
-  SyntaxError: 'Python ne može pročitati ovu liniju — prekršeno je pravilo pisanja: nedostaje dvotačka (:), zagrada ili navodnik, ili je nešto viška.',
-  IndentationError: 'Pogrešno uvlačenje. Linije unutar if/for/def moraju biti uvučene (4 razmaka), a linije na istom nivou jednako uvučene.',
-  TypeError: 'Operacija nad pogrešnim tipom, npr. sabiranje teksta i broja ("5" + 3), ili poziv funkcije sa pogrešnim brojem argumenata.',
-  ValueError: 'Tip je dobar, ali vrijednost nije, npr. int("abc") — tekst koji nije broj.',
-  ZeroDivisionError: 'Dijeljenje nulom nije dozvoljeno.',
-  KeyError: 'U rječniku nema tog ključa. Provjeri naziv ključa ili koristi .get(ključ).',
-  IndexError: 'Tražiš element liste koji ne postoji. Indeksi počinju od 0, a zadnji je len(lista) - 1.',
-  AttributeError: 'Taj objekat nema tu metodu ili polje, npr. lista nema .add() (koristi .append()).',
-  TimeoutError: 'Program se nije završio. Provjeri da li se uslov petlje ikad promijeni.',
-  Timeout: 'Program se nije završio. Provjeri da li se uslov petlje ikad promijeni.',
-  ReferenceError: 'JavaScript ne zna za to ime — pogrešno napisano ili nije deklarisano (const/let).',
-  SQLError: 'Baza nije mogla izvršiti upit — provjeri nazive tabela/kolona, zareze i navodnike.',
+  python: {
+    NameError: 'Python ne zna za to ime. Najčešće: ime je pogrešno napisano, varijabla se koristi prije nego što je napravljena, ili je tekst napisan bez navodnika.',
+    SyntaxError: 'Python ne može pročitati ovu liniju — prekršeno je pravilo pisanja: nedostaje dvotačka (:), zagrada ili navodnik, ili je nešto viška.',
+    IndentationError: 'Pogrešno uvlačenje. Linije unutar if/for/def moraju biti uvučene (4 razmaka), a linije na istom nivou jednako uvučene.',
+    TypeError: 'Operacija nad pogrešnim tipom, npr. sabiranje teksta i broja ("5" + 3), ili poziv funkcije sa pogrešnim brojem argumenata.',
+    ValueError: 'Tip je dobar, ali vrijednost nije, npr. int("abc") — tekst koji nije broj.',
+    ZeroDivisionError: 'Dijeljenje nulom nije dozvoljeno.',
+    KeyError: 'U rječniku nema tog ključa. Provjeri naziv ključa ili koristi .get(ključ).',
+    IndexError: 'Tražiš element liste koji ne postoji. Indeksi počinju od 0, a zadnji je len(lista) - 1.',
+    AttributeError: 'Taj objekat nema tu metodu ili polje, npr. lista nema .add() (koristi .append()).',
+    TimeoutError: 'Program se nije završio. Provjeri da li se uslov petlje ikad promijeni.',
+    Timeout: 'Program se nije završio. Provjeri da li se uslov petlje ikad promijeni.',
+  },
+  js: {
+    SyntaxError: 'JavaScript ne može pročitati kod: nedostaje ili je viška zagrada ( ), vitičasta zagrada { }, navodnik ili zarez. Pogledaj označenu liniju i onu prije nje.',
+    ReferenceError: 'JavaScript ne zna za to ime: pogrešno je napisano (velika i mala slova se razlikuju), nije deklarisano sa const ili let, ili se koristi prije deklaracije.',
+    TypeError: 'Vrijednost ne podržava to što tražiš: npr. poziv nečega što nije funkcija, čitanje polja od undefined ili null (x.ime kad je x undefined), ili nova vrijednost za const.',
+    RangeError: 'Vrijednost je van dozvoljenog opsega — najčešće funkcija koja beskonačno poziva samu sebe.',
+    Timeout: 'Program se nije završio. Provjeri da li se uslov petlje ikad promijeni i da li negdje čekaš (await) nešto što nikad ne stigne.',
+  },
+  sql: {
+    SQLError: 'Baza nije mogla izvršiti upit — provjeri nazive tabela/kolona, zareze i navodnike.',
+  },
 };
+const objasnjenjeGreske = (tip, lang) => (GRESKE[lang === 'dom' ? 'js' : lang] || {})[tip] || '';
 
