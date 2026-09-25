@@ -13,6 +13,8 @@
 // Testovi: python assert (IZLAZ, KOD, _sa_vrijednostima); js/dom ocekuj(stvarno, ocekivano, poruka),
 // js još IZLAZ, KOD, saVrijednostima({ime: vrijednost}); dom T.klikni/upisi/posalji/tekst/broj/stranica/IZLAZ.
 // ============================================================================
+// Za dom korake: HTML stranice u okviru prije pokretanja koda (da se vide id-jevi i klase).
+const htmlStranice = s => s.jezik === 'dom' && s.setup ? `<details class="ex" open><summary>HTML stranice (prije tvog koda)</summary><div><pre>${esc(s.setup.trim())}</pre></div></details>` : '';
 const TIPNAZIV = { tekst: 'Objašnjenje', primjer: 'Primjer — klikni na liniju', predvidi: 'Predvidi rezultat', popuni: 'Popuni prazninu', poredaj: 'Poredaj linije', greska: 'Nađi grešku', zadatak: 'Napiši kod', kviz: 'Provjeri razumijevanje' };
 let stepState = {};
 const markStep = st => P.mark(cur.id, cur.k, st);
@@ -59,7 +61,7 @@ const STEP = {
 
   primjer(el, s) {
     const lang = s.jezik || 'python'; const imaObj = s.obj && Object.keys(s.obj).length;
-    el.innerHTML = `${s.uvod ? `<p>${s.uvod}</p>` : ''}${kodHtml(s.kod, lang, { obj: s.obj || {}, klik: true })}
+    el.innerHTML = `${s.uvod ? `<p>${s.uvod}</p>` : ''}${htmlStranice(s)}${kodHtml(s.kod, lang, { obj: s.obj || {}, klik: true })}
       <div class="objbox" id="obj">${imaObj ? '👆 Klikni na liniju (one sa tačkicom imaju objašnjenje).' : '👆 Klikni na liniju da je označiš, pa pitaj tutora ako nije jasna.'}</div>
       <div class="row" ${s.bezPokretanja ? 'hidden' : ''}><button class="btn primary" id="run">▶ Pokreni</button><button class="btn" id="edit">✏️ Promijeni i probaj</button></div>
       <div id="edbox"></div><div id="res"></div>${s.poslije ? `<div class="note">${s.poslije}</div>` : ''}`;
@@ -78,7 +80,7 @@ const STEP = {
 
   predvidi(el, s) {
     const lang = s.jezik || 'python';
-    el.innerHTML = `<p>${s.pitanje || 'Šta će ovaj kod ispisati? Razmisli prije nego izabereš.'}</p>${kodHtml(s.kod, lang)}
+    el.innerHTML = `<p>${s.pitanje || 'Šta će ovaj kod ispisati? Razmisli prije nego izabereš.'}</p>${htmlStranice(s)}${kodHtml(s.kod, lang)}
       <div class="opts">${s.opcije.map((o, i) => `<button data-o="${i}"><code>${esc(o)}</code></button>`).join('')}</div><div id="fb"></div><div id="res"></div>`;
     el.querySelectorAll('[data-o]').forEach(b => b.onclick = () => {
       const i = Number(b.dataset.o);
@@ -93,7 +95,7 @@ const STEP = {
     const lang = s.jezik || 'python'; let gi = 0;
     const gapInput = () => { const idx = gi++; const w = Math.max(3, ...s.odg[idx].map(x => x.length)) + 1; return `<input class="gap" data-g="${idx}" size="${w}" aria-label="praznina ${idx + 1}" autocapitalize="off" autocomplete="off" spellcheck="false">`; };
     const lines = s.kod.split('\n').map((l, li) => `<div class="ln"><span class="no">${li + 1}</span><span class="tx">${l.split('___').map((part, j, arr) => hl(part, lang) + (j < arr.length - 1 ? gapInput() : '')).join('')}</span></div>`).join('');
-    el.innerHTML = `<p>${s.pitanje || 'Upiši ono što nedostaje u prazna polja.'}</p><div class="kod">${lines}</div>
+    el.innerHTML = `<p>${s.pitanje || 'Upiši ono što nedostaje u prazna polja.'}</p>${htmlStranice(s)}<div class="kod">${lines}</div>
       <div class="row"><button class="btn primary" id="chk">Provjeri</button><button class="btn" id="show">Pokaži rješenje</button></div><div id="fb"></div><div id="res"></div>`;
     const inputs = [...el.querySelectorAll('.gap')];
     const filled = () => { let k = 0; return s.kod.replace(/___/g, () => inputs[k++].value); };
@@ -119,7 +121,7 @@ const STEP = {
     const draw = mark => {
       $('#pl').innerHTML = order.map((li, pos) => `<div class="pline ${mark ? (li === pos ? 'ok' : 'no') : ''}"><span class="no" style="color:var(--term-dim);font-size:.75rem">${pos + 1}</span><pre>${hl(s.linije[li], lang) || ' '}</pre><span class="mv"><button data-up="${pos}" aria-label="Pomjeri gore" ${pos === 0 ? 'disabled' : ''}>↑</button><button data-dn="${pos}" aria-label="Pomjeri dolje" ${pos === order.length - 1 ? 'disabled' : ''}>↓</button></span></div>`).join('');
     };
-    el.innerHTML = `<p>${s.pitanje || 'Linije su izmiješane. Poredaj ih strelicama tako da program radi ispravno.'}</p><div class="parsons" id="pl"></div>
+    el.innerHTML = `<p>${s.pitanje || 'Linije su izmiješane. Poredaj ih strelicama tako da program radi ispravno.'}</p>${htmlStranice(s)}<div class="parsons" id="pl"></div>
       <div class="row"><button class="btn primary" id="chk">Provjeri redoslijed</button><button class="btn" id="show">Pokaži rješenje</button></div><div id="fb"></div><div id="res"></div>`;
     draw();
     $('#pl').addEventListener('click', e => {
@@ -139,7 +141,7 @@ const STEP = {
 
   greska(el, s) {
     const lang = s.jezik || 'python'; let done = false;
-    el.innerHTML = `<p>${s.pitanje || 'Ovaj kod ima grešku. Klikni na liniju u kojoj je greška.'}</p>${kodHtml(s.kod, lang, { klik: true })}<div class="row"><button class="btn" id="runb">▶ Pokreni (pogledaj poruku greške)</button></div><div id="fb"></div><div id="res"></div>`;
+    el.innerHTML = `<p>${s.pitanje || 'Ovaj kod ima grešku. Klikni na liniju u kojoj je greška.'}</p>${htmlStranice(s)}${kodHtml(s.kod, lang, { klik: true })}<div class="row"><button class="btn" id="runb">▶ Pokreni (pogledaj poruku greške)</button></div><div id="fb"></div><div id="res"></div>`;
     el.querySelectorAll('.ln').forEach(ln => ln.onclick = () => {
       if (done) return;
       const n = Number(ln.dataset.ln); const ok = n === s.linija;
@@ -152,7 +154,7 @@ const STEP = {
 
   zadatak(el, s) {
     const lang = s.jezik || 'python'; let hi = 0;
-    el.innerHTML = `<div class="stepbody">${s.opis}</div>${editorHtml('ed2', s.pocetak || '')}
+    el.innerHTML = `<div class="stepbody">${s.opis}</div>${htmlStranice(s)}${editorHtml('ed2', s.pocetak || '')}
       <div class="row"><button class="btn primary" id="run">▶ Pokreni i provjeri</button><button class="btn" id="hint" ${(s.nagovjestaji || []).length ? '' : 'hidden'}>💡 Nagovještaj</button><button class="btn" id="aicheck" hidden>🤖 Provjeri sa tutorom</button><button class="btn" id="sol">Pokaži rješenje</button></div>
       <div id="hints"></div><div id="res"></div><div class="tests" id="tests">${testsHtml(s.testovi)}</div><div id="solbox"></div>`;
     const ta = wireEditor('ed2', lang); stepState.ta = ta;

@@ -43,7 +43,7 @@ function ocekuj(stvarno, ocekivano, poruka) {
 }
 
 // Lažni server koji se ponaša kao API u inhome: /api/klijenti (GET, POST, GET/PATCH/DELETE po id-u),
-// /api/fakture (?klijent_id=), plus rute za vježbu grešaka: /api/pad (500), /api/profil (401),
+// /api/fakture (?klijent_id=, 400 za neispravan id), plus rute za vježbu grešaka: /api/pad (500), /api/profil (401),
 // /api/spor (odgovor poslije 1,5 s). Adrese drugih sajtova daju mrežnu grešku, kao bez interneta.
 // Svaki poziv napraviServer() ima svoju svježu bazu, pa se pokretanja ne miješaju.
 function napraviServer(kasnjenje = 120) {
@@ -116,6 +116,7 @@ function napraviServer(kasnjenje = 120) {
     if (put === '/api/fakture') {
       if (metoda !== 'GET') return [405, { error: 'Metoda nije dozvoljena.' }];
       const kid = upit.get('klijent_id');
+      if (kid !== null && !/^[1-9][0-9]*$/.test(kid)) return [400, { error: 'klijent_id mora biti pozitivan cijeli broj.' }];
       return [200, kopija(kid ? baza.fakture.filter(f => f.klijent_id === Number(kid)) : baza.fakture)];
     }
     if (put === '/api/pad') return [500, { error: 'Greška na serveru (namjerna, za vježbu).' }];

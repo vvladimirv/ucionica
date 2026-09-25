@@ -24,6 +24,7 @@ function stepContext() {
   if (s.p) c += `\nPitanje: ${s.p}`;
   if (s.pitanje) c += `\nPitanje: ${strip(s.pitanje)}`;
   if (s.kod) c += `\nKod iz koraka (${s.jezik || 'python'}):\n${s.kod}`;
+  if (s.setup) c += `\n${s.jezik === 'sql' ? 'SQL koji pripremi bazu' : 'HTML stranice u okviru'}:\n${s.setup}`;
   if (s.linije) c += `\nLinije za poredati:\n${s.linije.join('\n')}`;
   if (stepState.linija) c += `\nUčenik je označio liniju ${stepState.linija}.`;
   if (stepState.ta) c += `\nUčenikov trenutni kod:\n${stepState.ta.value.slice(0, 3000)}`;

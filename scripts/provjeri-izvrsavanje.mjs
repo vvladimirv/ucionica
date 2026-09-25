@@ -14,7 +14,7 @@ export const normIzlaz = out => String(out || '').replace(/\n+$/, '').split('\n'
 async function pokreni(page, jezik, kod, testovi, setup) {
   const posao = page.evaluate(async ([jezik, kod, testovi, setup]) => {
     const r = await RUN[jezik](kod, testovi || [], setup);
-    return r && { ok: r.ok, out: r.out, err: r.err, errType: r.errType, errLine: r.errLine ?? null, tests: r.tests, tabele: r.tabele };
+    return r && { ok: r.ok, out: r.out, err: r.err, errType: r.errType, errLine: r.errLine ?? null, tests: r.tests, tabele: r.tabele, stranica: r.stranica };
   }, [jezik, kod, testovi, setup]);
   const rok = new Promise((_, rej) => setTimeout(() => rej(new Error('isteklo 30 s')), 30000));
   return Promise.race([posao, rok]);
@@ -43,7 +43,9 @@ export async function provjeriIzvrsavanje(u, filter = []) {
           if (!r) greske.push(`${gdje}: runner nije dostupan`);
           else if (!r.ok) { if (!/greš/i.test(tacna)) greske.push(`${gdje}: kod pada (${r.err}), a tačna opcija je "${tacna}"`); }
           else if (s.opcijeSu !== 'opis') {
-            const izlaz = jezik === 'sql' ? (r.tabele || []).map(t => t.rows.map(row => row.join(', ')).join(' · ')).join(' · ') : normIzlaz(r.out);
+            // sql: redovi tabela; dom: konzola, a ako je prazna, tekst stranice; ostalo: konzola
+            const izlaz = jezik === 'sql' ? (r.tabele || []).map(t => t.rows.map(row => row.join(', ')).join(' · ')).join(' · ')
+              : jezik === 'dom' && !r.out ? normIzlaz(r.stranica) : normIzlaz(r.out);
             const ok = izlaz === tacna.trim() || (izlaz === '' && /^ništa/i.test(tacna));
             if (!ok) greske.push(`${gdje}: izlaz "${izlaz}" ≠ tačna opcija "${tacna}"`);
             const iste = s.opcije.filter((o, i) => i !== s.t && o.trim() === izlaz);
@@ -60,7 +62,12 @@ export async function provjeriIzvrsavanje(u, filter = []) {
           const r = await run(s.kod); provjereno++;
           if (!r) greske.push(`${gdje}: runner nije dostupan`);
           else if (r.ok) greske.push(`${gdje}: kod "sa greškom" se izvršava bez greške`);
-          else if (r.errLine != null && r.errLine !== s.linija) upozorenja.push(`${gdje}: greška se prijavljuje na liniji ${r.errLine}, tačan odgovor je ${s.linija} (${r.err})`);
+          else {
+            // Pitanje "pada na liniji N, ali uzrok je ranije": tvrdnja o liniji prijave mora biti tačna.
+            const tvrdnja = /pada na liniji (\d+)/.exec(s.pitanje || '');
+            if (tvrdnja && Number(tvrdnja[1]) !== r.errLine) greske.push(`${gdje}: pitanje kaže da program pada na liniji ${tvrdnja[1]}, a pada na ${r.errLine} (${r.err})`);
+            else if (!tvrdnja && !/uzrok/.test(s.pitanje || '') && r.errLine != null && r.errLine !== s.linija) upozorenja.push(`${gdje}: greška se prijavljuje na liniji ${r.errLine}, tačan odgovor je ${s.linija} (${r.err})`);
+          }
           if (s.ispravno) { const r2 = await run(s.ispravno); if (!r2 || !r2.ok) greske.push(`${gdje}: ispravljeni kod pada — ${opisGreske(r2)}`); }
         } else if (s.tip === 'zadatak') {
           const r = await run(s.rjesenje, s.testovi); provjereno++;
