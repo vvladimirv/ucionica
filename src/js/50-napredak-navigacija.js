@@ -60,9 +60,19 @@ function renderMenu() {
     return `<button data-go="lek:${l.id}" aria-current="${cur.tip === 'lek' && cur.id === l.id}"><span class="n">${i + 1}</span><span>${esc(l.naslov)}</span>${s}</button>`;
   };
   const temaBtn = t => { const p = P.data.teme[t.id] || {}; return `<button data-go="tema:${t.id}" aria-current="${cur.tip === 'tema' && cur.id === t.id}"><span class="n">${t.n}</span><span>${esc(t.naslov)}</span><span class="s ${p.done ? 'done' : ''}">${p.done ? '✓' : p.kviz || ''}</span></button>`; };
-  $('#menu').innerHTML = DIJELOVI.map(d => `<div class="dio"><div class="dio-t">${esc(d.naslov)}</div>${d.lekcije.map(lekBtn).join('')}${!d.lekcije.length && d.uskoro ? `<div class="soon">${esc(d.uskoro)}</div>` : ''}</div>`).join('')
+  const sadrzaj = DIJELOVI.map(d => `<div class="dio"><div class="dio-t">${esc(d.naslov)}</div>${d.lekcije.map(lekBtn).join('')}${!d.lekcije.length && d.uskoro ? `<div class="soon">${esc(d.uskoro)}</div>` : ''}</div>`).join('')
     + (typeof TEME !== 'undefined' ? `<div class="dio"><div class="dio-t">Dio 4 · Teme (web, baze, arhitektura…)</div>${TEME.map(temaBtn).join('')}<button data-go="rjecnik" aria-current="${cur.tip === 'rjecnik'}"><span class="n">A–Ž</span><span>Rječnik pojmova</span><span></span></button></div>` : '');
+  // Na telefonu je meni sklopljen (inače bi 30+ stavki stajalo iznad lekcije); na širem ekranu je uvijek otvoren.
+  const lek = cur.tip === 'lek' && findLek(cur.id);
+  const dio = lek && DIJELOVI.find(d => d.lekcije.includes(lek));
+  const gdje = lek ? `${dio.naslov.split(' · ')[0]} · ${dio.lekcije.indexOf(lek) + 1}. ${lek.naslov}`
+    : cur.tip === 'tema' ? `Tema ${TEME.find(t => t.id === cur.id)?.n}: ${TEME.find(t => t.id === cur.id)?.naslov}` : 'Rječnik pojmova';
+  const otvoren = !uzakMeni() || menuOtvoren;
+  $('#menu').innerHTML = `<details id="menuDet"${otvoren ? ' open' : ''}><summary><span class="mt">Sadržaj</span><span class="mc">${esc(gdje)}</span><span class="mz" aria-hidden="true">▾</span></summary><div class="menu-sadrzaj">${sadrzaj}</div></details>`;
+  $('#menuDet').addEventListener('toggle', e => { if (uzakMeni()) menuOtvoren = e.target.open; });
 }
+let menuOtvoren = false;
+const uzakMeni = () => window.matchMedia('(max-width: 860px)').matches;
 
 function go(target, focus = true) {
   const [tip, id, k] = String(target).split(':');
@@ -73,6 +83,7 @@ function go(target, focus = true) {
   } else if (tip === 'tema' && typeof TEME !== 'undefined' && TEME.some(t => t.id === id)) cur = { tip, id };
   else if (tip === 'rjecnik' && typeof RJECNIK !== 'undefined') cur = { tip };
   else cur = { tip: 'lek', id: DIJELOVI[0].lekcije[0]?.id, k: 0 };
+  menuOtvoren = false;   // na telefonu: poslije izbora lekcije meni se sklopi, da se vidi sadržaj
   P.data.zadnje = cur.tip === 'lek' ? `lek:${cur.id}:${cur.k}` : cur.tip === 'tema' ? `tema:${cur.id}` : 'rjecnik';
   if (cur.tip === 'lek') P.lek(cur.id).korak = cur.k;
   P.save();

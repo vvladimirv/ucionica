@@ -6,10 +6,10 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const claudeUse = name => (window.claude && typeof window.claude.use === 'function') ? window.claude.use(name).catch(() => null) : Promise.resolve(null);
 
-const ENV = { py: 'wait', sql: 'wait', js: 'ok', tutor: 'wait', save: 'local' };
+const ENV = { py: 'mir', sql: 'wait', js: 'ok', tutor: 'wait', save: 'local' };   // py se učita tek na prvom Python koraku
 function renderStatus() {
-  const lbl = { ok: 'radi', wait: 'učitava se', bad: 'nedostupno', local: 'ovaj preglednik', cloud: 'tvoj nalog' };
-  const cls = v => v === 'ok' || v === 'cloud' ? 'ok' : v === 'bad' ? 'bad' : v === 'local' ? '' : 'wait';
+  const lbl = { ok: 'radi', wait: 'učitava se', mir: 'kad zatreba', bad: 'nedostupno', local: 'ovaj preglednik', cloud: 'tvoj nalog' };
+  const cls = v => v === 'ok' || v === 'cloud' ? 'ok' : v === 'bad' ? 'bad' : v === 'local' || v === 'mir' ? '' : 'wait';
   $('#status').innerHTML = [['Python', ENV.py], ['JavaScript', ENV.js], ['SQL', ENV.sql], ['Tutor', ENV.tutor], ['Napredak', ENV.save]]
     .map(([n, v]) => `<span class="pill ${cls(v)}">${n}: ${lbl[v] || v}</span>`).join('');
 }

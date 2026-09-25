@@ -66,7 +66,16 @@ nav.menu{position:sticky;top:env(safe-area-inset-top,0px);display:grid;gap:14px;
 .dio button .s{font-family:var(--mono);font-size:.7rem;color:var(--muted)}
 .dio button .s.done{color:var(--good)}
 .dio .soon{font-size:.82rem;color:var(--muted);padding:2px 8px}
-@media (max-width:860px){nav.menu details:not([open]) .dio{display:none}}
+/* meni je u <details>: na širokom ekranu uvijek otvoren i bez naslova, na telefonu sklopiv */
+.menu-sadrzaj{display:grid;gap:14px}
+#menuDet>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:baseline;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:0}
+#menuDet>summary::-webkit-details-marker{display:none}
+#menuDet>summary .mt{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);flex:none}
+#menuDet>summary .mc{font-weight:600;font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 auto;min-width:0}
+#menuDet>summary .mz{color:var(--muted);flex:none}
+#menuDet[open]>summary{margin-bottom:12px}
+#menuDet[open]>summary .mz{transform:rotate(180deg)}
+@media (min-width:861px){#menuDet>summary{display:none}}
 
 main{display:grid;gap:16px;min-width:0}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px;min-width:0}
@@ -95,8 +104,8 @@ main{display:grid;gap:16px;min-width:0}
 
 /* code view */
 .kod{background:var(--term);color:var(--term-ink);border-radius:12px;font-family:var(--mono);font-size:.84rem;line-height:1.6;overflow-x:auto;padding:8px 0}
-.ln{display:grid;grid-template-columns:38px 1fr;min-width:max-content}
-.ln .no{color:var(--term-dim);text-align:right;padding-right:12px;user-select:none}
+.ln{display:grid;grid-template-columns:46px 1fr;min-width:max-content}
+.ln .no{color:var(--term-dim);text-align:right;padding-right:12px;user-select:none;white-space:nowrap}
 .ln .tx{white-space:pre;padding-right:14px}
 .ln.klik{cursor:pointer}
 .ln.klik:hover{background:var(--term-sel)}

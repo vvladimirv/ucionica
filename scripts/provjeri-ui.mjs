@@ -11,7 +11,8 @@ async function korak(page, lek, k, s) {
   await page.evaluate(([id, k]) => go(`lek:${id}:${k}`), [lek.id, k]);
   await page.waitForSelector('#step');
   const ceka = sel => page.waitForSelector(sel, ROK);
-  const izlazGotov = () => page.waitForFunction(() => { const r = document.querySelector('#res'); return r && r.textContent && !r.textContent.startsWith('Pokrećem'); }, null, ROK);
+  // Pokretanje je gotovo kad korak zapamti rezultat (stepState.last postavlja pokreni()).
+  const izlazGotov = () => page.waitForFunction(() => !!stepState.last, null, ROK);
   switch (s.tip) {
     case 'predvidi': case 'kviz':
       await page.click(`#step [data-o="${s.t}"]`); await ceka('#step .fb.ok'); break;
@@ -81,6 +82,15 @@ export async function provjeriTelefon() {
     const siroko = await u.page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (siroko > 1) greske.push(`telefon (390px) ${cilj}: stranica se pomjera vodoravno za ${siroko}px`);
   }
+  // Sklopljen meni: naslov lekcije mora biti u prvom ekranu; klik na „Sadržaj“ otvori meni, izbor lekcije ga zatvori.
+  await u.page.evaluate(() => go('lek:js7:0'));
+  const vrh = await u.page.evaluate(() => document.querySelector('#main h2').getBoundingClientRect().top);
+  if (vrh > 400) greske.push(`telefon: naslov lekcije je ${Math.round(vrh)}px od vrha (meni nije sklopljen?)`);
+  await u.page.click('#menuDet > summary');
+  const otvoren = await u.page.evaluate(() => document.querySelector('#menuDet').open);
+  await u.page.click('#menuDet [data-go="lek:js3"]');
+  const poslije = await u.page.evaluate(() => ({ open: document.querySelector('#menuDet').open, id: cur.id }));
+  if (!otvoren || poslije.open || poslije.id !== 'js3') greske.push(`telefon: meni se ne otvara ili ne zatvara kako treba (${JSON.stringify({ otvoren, ...poslije })})`);
   greske.push(...u.greskeStranice.map(g => 'telefon: ' + g));
   await u.zatvori();
   return { greske };
