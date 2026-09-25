@@ -3,8 +3,19 @@
   "private": true,
   "description": "Učionica programiranja — interaktivni kurs (Python, JavaScript, SQL) koji se izvršava u pregledniku i objavljuje kao Claude artefakt.",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "provjera": "node scripts/provjeri-strukturu.mjs",
+    "test": "node scripts/test.mjs",
+    "pregled": "node scripts/pregled.mjs",
+    "runtime": "node scripts/pripremi-runtime.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.56.1",
+    "pyodide": "314.0.7",
+    "sql.js": "1.10.3"
   }
 }
