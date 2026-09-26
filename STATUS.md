@@ -63,3 +63,4 @@ Kod iz inhome i Sole-KP citiraj samo iz samih repozitorija. Postojeći citati su
 | Verzija | Id | Datum | Commit | Sadržaj |
 | --- | --- | --- | --- | --- |
 | 6 | `1790409771-0c3a` | 2026-09-26 | `357387f` | Dio 2 · JavaScript |
+| 7 | `1790411547-d968` | 2026-09-26 | `d9ad761` | Dio 3 · SQL |
