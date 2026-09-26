@@ -1,10 +1,10 @@
 // ============================================================================
 // Lekcija i vrste koraka. Svaki korak je objekat sa `tip` i poljima za tu vrstu:
 //   tekst    {html}
-//   primjer  {kod, jezik?, obj:{brojLinije: 'objašnjenje'}, uvod?, poslije?}
-//   predvidi {kod, opcije:[], t, obj, pitanje?}
-//   popuni   {kod sa ___, odg:[[prihvatljivi odgovori]…], obj, pitanje?}
-//   poredaj  {linije:[tačan redoslijed], obj, pitanje?}
+//   primjer  {kod, jezik?, obj:{brojLinije: 'objašnjenje'}, uvod?, poslije?, bezPokretanja?}
+//   predvidi {kod, opcije:[], t, obj, pitanje?}          (" · " u opciji = novi red izlaza)
+//   popuni   {kod sa ___, odg:[[prihvatljivi odgovori]…], obj, pitanje?, pokreni?}
+//   poredaj  {linije:[tačan redoslijed], obj, pitanje?, pokreni?}
 //   greska   {kod, linija, obj, ispravno?, pitanje?}
 //   zadatak  {opis(html), pocetak, testovi:[{opis, kod}], nagovjestaji:[], rjesenje, objRj?, poslije?}
 //   kviz     {p, o:[], t, e}
