@@ -129,10 +129,22 @@ function loadSql() {
 // Linija greške u SQL-u. sql.js ne daje poziciju, pa se ona izvodi iz poruke SQLite-a:
 // pala pokrenuta naredba (npr. ograničenje) → linija gdje naredba počinje; greška pri čitanju naredbe →
 // prvo mjesto spornog dijela iz poruke (near "…", no such column: …) u ostatku koda.
+// Gdje u tekstu počinje sama naredba: preskoči razmake i komentare (-- … i /* … */), jer ih
+// SQLite vraća kao dio naredbe koja slijedi.
+function pocetakNaredbe(t) {
+  let i = 0;
+  for (;;) {
+    while (i < t.length && /\s/.test(t[i])) i++;
+    if (t.startsWith('--', i)) { const k = t.indexOf('\n', i); i = k < 0 ? t.length : k + 1; continue; }
+    if (t.startsWith('/*', i)) { const k = t.indexOf('*/', i + 2); i = k < 0 ? t.length : k + 2; continue; }
+    return i;
+  }
+}
 function sqlLinija(code, od, sql, poruka) {
   const linijaNa = i => code.slice(0, i).split('\n').length;
-  const tekst = sql ?? code.slice(od);
-  const prvi = Math.max(0, tekst.search(/\S/));
+  // komentari se zamijene razmacima (pozicije ostaju iste), da se sporni dio ne nađe u komentaru
+  const tekst = (sql ?? code.slice(od)).replace(/--[^\n]*/g, m => ' '.repeat(m.length)).replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' '));
+  const prvi = pocetakNaredbe(tekst);
   if (sql) return linijaNa(od + prvi);
   if (/incomplete input/.test(poruka)) return code.replace(/\s+$/, '').split('\n').length;
   const m = poruka.match(/near "((?:[^"]|"")*)"|unrecognized token: "((?:[^"]|"")*)"|no such column: (\S+)|no such table: (\S+)|misuse of aggregate:? (\w+)|ambiguous column name: (\S+)|no such function: (\w+)/);
@@ -149,7 +161,7 @@ function sqlLinija(code, od, sql, poruka) {
 }
 // Poruka za naredbu koja ne vraća redove (INSERT, UPDATE, CREATE…), da učenik vidi šta se desilo.
 function sqlPoruka(sql, izmijenjeno) {
-  const rijec = (sql.trim().match(/^\w+(\s+\w+)?/) || [''])[0].toUpperCase();
+  const rijec = (sql.slice(pocetakNaredbe(sql)).match(/^\w+(\s+\w+)?/) || [''])[0].toUpperCase();
   const prva = rijec.split(/\s+/)[0];
   const opis = { INSERT: `dodano redova: ${izmijenjeno}`, UPDATE: `izmijenjeno redova: ${izmijenjeno}`, DELETE: `obrisano redova: ${izmijenjeno}`,
     BEGIN: 'transakcija je počela', COMMIT: 'izmjene su trajno upisane', ROLLBACK: 'izmjene iz transakcije su poništene',
@@ -157,6 +169,7 @@ function sqlPoruka(sql, izmijenjeno) {
   return `✓ ${prva}${opis ? ' — ' + opis : ''}`;
 }
 // testovi: {opis, upit, ocekivano:[[...]], redoslijed?}; bez `upit` provjerava se rezultat tvog zadnjeg SELECT-a.
+// {opis, kodSadrzi: ['regex', …]} provjerava sam kod (npr. da transakcija ima BEGIN i COMMIT).
 // Naredbe se izvršavaju jedna po jedna: rezultati idu redom u `blokovi` (tabela ili poruka), i ostaju i kad kasnija naredba padne.
 async function runSql(code, tests = [], setup = '') {
   const SQL = await loadSql();
@@ -185,6 +198,11 @@ async function runSql(code, tests = [], setup = '') {
   for (const t of tests) {
     if (!res.ok) { res.tests.push({ ok: null, m: 'nije pokrenut (upit ima grešku)' }); continue; }
     try {
+      if (t.kodSadrzi) {
+        const nema = t.kodSadrzi.filter(r => !new RegExp(r, 'i').test(code));
+        res.tests.push({ ok: !nema.length, m: nema.length ? 'u kodu nedostaje: ' + nema.map(r => r.replace(/\\b/g, '')).join(', ') : '' });
+        continue;
+      }
       const rows = t.upit ? (db.exec(t.upit)[0]?.values || []) : (last?.rows || []);
       let a = norm(rows), b = norm(t.ocekivano);
       if (!t.redoslijed) { a = a.sort(); b = b.sort(); }

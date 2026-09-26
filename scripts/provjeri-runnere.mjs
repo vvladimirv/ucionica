@@ -97,6 +97,10 @@ const SLUCAJEVI = [
     r => r.errLine === 3 ? '' : JSON.stringify(r)],
   ['sql: transakcija i ROLLBACK', 'sql', "BEGIN;\nDELETE FROM k;\nROLLBACK;\nSELECT COUNT(*) AS broj FROM k;", [], SQL_BAZA,
     r => r.ok && r.out === '✓ BEGIN — transakcija je počela\n✓ DELETE — obrisano redova: 2\n✓ ROLLBACK — izmjene iz transakcije su poništene\n' && JSON.stringify(r.tabele) === JSON.stringify([{ cols: ['broj'], rows: [[2]] }]) ? '' : JSON.stringify(r)],
+  ['sql: komentar ispred naredbe (poruka i linija)', 'sql', "-- plati fakturu\nUPDATE k SET grad = 'Bihać' WHERE ime = 'Amra';\n\n-- novi klijent bez imena\nINSERT INTO k (ime, grad)\nVALUES (NULL, 'Tuzla');", [], SQL_BAZA,
+    r => r.errLine === 5 && r.out === '✓ UPDATE — izmijenjeno redova: 1\n' ? '' : JSON.stringify(r)],
+  ['sql: sporni dio se ne traži u komentaru', 'sql', "-- FROM je obavezan\nSELECT ime,\nFROM k;", [], SQL_BAZA,
+    r => r.errLine === 3 && /near "FROM"/.test(r.err) ? '' : JSON.stringify(r)],
   ['dom: element u konzoli', 'dom', 'console.log(document.querySelector("#b"), document.querySelectorAll("li").length);', [], '<button id="b" class="x">Klik</button>',
     r => r.out === '<button id="b" class="x">Klik</button> 0\n' ? '' : JSON.stringify(r)],
 ];

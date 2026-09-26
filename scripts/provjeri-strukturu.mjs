@@ -73,7 +73,7 @@ export function provjeriStrukturu() {
       if (s.tip === 'poredaj' && new Set(s.linije).size !== s.linije.length) upozorenja.push(`${gdje}: iste linije se ponavljaju (više tačnih redoslijeda, a prihvata se samo jedan)`);
       if (s.tip === 'zadatak') {
         if (!Array.isArray(s.testovi) || !s.testovi.length) greske.push(`${gdje}: zadatak nema testove`);
-        for (const [i, t] of (s.testovi || []).entries()) if (!t.opis || !(t.kod || t.upit !== undefined || t.ocekivano)) greske.push(`${gdje}: test ${i + 1} nema opis ili provjeru`);
+        for (const [i, t] of (s.testovi || []).entries()) if (!t.opis || !(t.kod || t.upit !== undefined || t.ocekivano || t.kodSadrzi)) greske.push(`${gdje}: test ${i + 1} nema opis ili provjeru`);
       }
       // HTML u poljima koja idu kroz innerHTML
       for (const p of HTML_POLJA) {

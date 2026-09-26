@@ -135,9 +135,10 @@ table.res th,table.res td{border:1px solid var(--term-line);padding:3px 8px;text
 table.res th{color:var(--term-dim)}
 table.res{margin-block:4px 8px} table.res td.prazan{color:var(--term-dim);font-style:italic}
 .baza{display:grid;gap:10px}
-.baza-tabele{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;align-items:start}
-.baza-tabele>div{overflow-x:auto;display:grid;gap:4px}
+.baza-tabele{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-start}
+.baza-tabele>div{max-width:100%;overflow-x:auto;display:grid;gap:4px}
 .baza .tbl{font-family:var(--mono);font-size:.76rem;width:auto}
+.baza .tbl th,.baza .tbl td{white-space:nowrap}
 .tbl td.prazan{color:var(--muted);font-style:italic}
 
 /* exercises */
