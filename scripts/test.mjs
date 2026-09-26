@@ -23,7 +23,7 @@ const u = await otvoriUcionicu();
 let greske = 0;
 try {
   const rn = filter.length ? { greske: [], broj: 0 } : await provjeriRunnere(u);
-  if (!filter.length) ispisi(`runneri: ${rn.broj} slučajeva (JavaScript, DOM, lažni server, čuvar petlji)`, rn.greske);
+  if (!filter.length) ispisi(`runneri: ${rn.broj} slučajeva (JavaScript, DOM, SQL, lažni server, čuvar petlji)`, rn.greske);
   const iz = await provjeriIzvrsavanje(u, filter);
   ispisi(`izvršavanje: ${iz.provjereno} provjera`, iz.greske, iz.upozorenja);
   const ui = await provjeriUi(u, filter);

@@ -44,7 +44,7 @@ export async function provjeriIzvrsavanje(u, filter = []) {
           else if (!r.ok) { if (!/greš/i.test(tacna)) greske.push(`${gdje}: kod pada (${r.err}), a tačna opcija je "${tacna}"`); }
           else if (s.opcijeSu !== 'opis') {
             // sql: redovi tabela; dom: konzola, a ako je prazna, tekst stranice; ostalo: konzola
-            const izlaz = jezik === 'sql' ? (r.tabele || []).map(t => t.rows.map(row => row.join(', ')).join(' · ')).join(' · ')
+            const izlaz = jezik === 'sql' ? (r.tabele || []).filter(t => t.rows.length).map(t => t.rows.map(row => row.map(v => v === null ? 'NULL' : v).join(', ')).join(' · ')).join(' · ')
               : jezik === 'dom' && !r.out ? normIzlaz(r.stranica) : normIzlaz(r.out);
             const ok = izlaz === tacna.trim() || (izlaz === '' && /^ništa/i.test(tacna));
             if (!ok) greske.push(`${gdje}: izlaz "${izlaz}" ≠ tačna opcija "${tacna}"`);

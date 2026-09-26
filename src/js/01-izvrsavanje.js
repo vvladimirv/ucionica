@@ -126,25 +126,66 @@ function loadSql() {
   })().catch(e => { ENV.sql = 'bad'; renderStatus(); console.warn('SQL nije dostupan:', e); return null; });
   return sqlPromise;
 }
-// testovi: {opis, upit, ocekivano:[[...]], redoslijed?}; bez `upit` provjerava se rezultat tvog zadnjeg SELECT-a
+// Linija greške u SQL-u. sql.js ne daje poziciju, pa se ona izvodi iz poruke SQLite-a:
+// pala pokrenuta naredba (npr. ograničenje) → linija gdje naredba počinje; greška pri čitanju naredbe →
+// prvo mjesto spornog dijela iz poruke (near "…", no such column: …) u ostatku koda.
+function sqlLinija(code, od, sql, poruka) {
+  const linijaNa = i => code.slice(0, i).split('\n').length;
+  const tekst = sql ?? code.slice(od);
+  const prvi = Math.max(0, tekst.search(/\S/));
+  if (sql) return linijaNa(od + prvi);
+  if (/incomplete input/.test(poruka)) return code.replace(/\s+$/, '').split('\n').length;
+  const m = poruka.match(/near "((?:[^"]|"")*)"|unrecognized token: "((?:[^"]|"")*)"|no such column: (\S+)|no such table: (\S+)|misuse of aggregate:? (\w+)|ambiguous column name: (\S+)|no such function: (\w+)/);
+  const token = m && m.slice(1).find(x => x !== undefined);
+  if (token) {
+    const t = token.replace(/""/g, '"');
+    const re = new RegExp(/^\w/.test(t) ? `(?<![\\w.])${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\w)` : t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    // agregat u WHERE (misuse of aggregate) traži se poslije WHERE, jer se isti agregat često nalazi i u SELECT listi
+    const w = m[5] !== undefined ? tekst.search(/\bWHERE\b/i) : -1;
+    const i = w >= 0 && tekst.slice(w).search(re) >= 0 ? w + tekst.slice(w).search(re) : tekst.search(re);
+    if (i >= 0) return linijaNa(od + i);
+  }
+  return linijaNa(od + prvi);
+}
+// Poruka za naredbu koja ne vraća redove (INSERT, UPDATE, CREATE…), da učenik vidi šta se desilo.
+function sqlPoruka(sql, izmijenjeno) {
+  const rijec = (sql.trim().match(/^\w+(\s+\w+)?/) || [''])[0].toUpperCase();
+  const prva = rijec.split(/\s+/)[0];
+  const opis = { INSERT: `dodano redova: ${izmijenjeno}`, UPDATE: `izmijenjeno redova: ${izmijenjeno}`, DELETE: `obrisano redova: ${izmijenjeno}`,
+    BEGIN: 'transakcija je počela', COMMIT: 'izmjene su trajno upisane', ROLLBACK: 'izmjene iz transakcije su poništene',
+    CREATE: /INDEX/.test(rijec) ? 'indeks je napravljen' : 'tabela je napravljena', DROP: 'obrisano', ALTER: 'tabela je izmijenjena' }[prva];
+  return `✓ ${prva}${opis ? ' — ' + opis : ''}`;
+}
+// testovi: {opis, upit, ocekivano:[[...]], redoslijed?}; bez `upit` provjerava se rezultat tvog zadnjeg SELECT-a.
+// Naredbe se izvršavaju jedna po jedna: rezultati idu redom u `blokovi` (tabela ili poruka), i ostaju i kad kasnija naredba padne.
 async function runSql(code, tests = [], setup = '') {
   const SQL = await loadSql();
   if (!SQL) return null;
   const db = new SQL.Database();
-  const res = { ok: true, out: '', err: null, errType: null, tabele: [], tests: [] };
-  try { if (setup) db.run(setup); } catch (e) { res.ok = false; res.err = 'Greška u pripremi baze: ' + e.message; return res; }
-  let last = null;
+  const res = { ok: true, out: '', err: null, errType: null, errLine: null, tabele: [], blokovi: [], tests: [] };
+  try { if (setup) db.run(setup); } catch (e) { res.ok = false; res.err = 'Greška u pripremi baze: ' + e.message; db.close(); return res; }
+  let last = null, pozicija = 0, trenutna = null;
   try {
-    const r = db.exec(code);
-    res.tabele = r.map(t => ({ cols: t.columns, rows: t.values }));
-    last = r.length ? r[r.length - 1] : null;
-    if (!r.length) res.out = 'Upit je izvršen (nema redova za prikaz).\n';
-  } catch (e) { res.ok = false; res.errType = 'SQLError'; res.err = 'SQL greška: ' + e.message; }
+    for (const st of db.iterateStatements(code)) {
+      trenutna = { od: pozicija, sql: st.getSQL() };
+      pozicija += trenutna.sql.length;
+      const cols = st.getColumnNames(), rows = [];
+      while (st.step()) rows.push(st.get());
+      if (cols.length) { last = { cols, rows }; res.tabele.push(last); res.blokovi.push({ tabela: last }); }
+      else res.blokovi.push({ poruka: sqlPoruka(trenutna.sql, db.getRowsModified()) });
+      trenutna = null;
+    }
+  } catch (e) {
+    res.ok = false; res.errType = 'SQLError';
+    res.errLine = sqlLinija(code, trenutna ? trenutna.od : pozicija, trenutna && trenutna.sql, e.message);
+    res.err = `SQL greška (linija ${res.errLine}): ${e.message}`;
+  }
+  res.out = res.blokovi.filter(b => b.poruka).map(b => b.poruka + '\n').join('');
   const norm = rows => rows.map(r => JSON.stringify(r.map(v => typeof v === 'number' ? Math.round(v * 100) / 100 : v)));
   for (const t of tests) {
     if (!res.ok) { res.tests.push({ ok: null, m: 'nije pokrenut (upit ima grešku)' }); continue; }
     try {
-      const rows = t.upit ? (db.exec(t.upit)[0]?.values || []) : (last?.values || []);
+      const rows = t.upit ? (db.exec(t.upit)[0]?.values || []) : (last?.rows || []);
       let a = norm(rows), b = norm(t.ocekivano);
       if (!t.redoslijed) { a = a.sort(); b = b.sort(); }
       const ok = a.length === b.length && a.every((x, i) => x === b[i]);

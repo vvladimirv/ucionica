@@ -133,6 +133,12 @@ main{display:grid;gap:16px;min-width:0}
 table.res{border-collapse:collapse;font-family:var(--mono);font-size:.8rem;margin-top:6px}
 table.res th,table.res td{border:1px solid var(--term-line);padding:3px 8px;text-align:left}
 table.res th{color:var(--term-dim)}
+table.res{margin-block:4px 8px} table.res td.prazan{color:var(--term-dim);font-style:italic}
+.baza{display:grid;gap:10px}
+.baza-tabele{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;align-items:start}
+.baza-tabele>div{overflow-x:auto;display:grid;gap:4px}
+.baza .tbl{font-family:var(--mono);font-size:.76rem;width:auto}
+.tbl td.prazan{color:var(--muted);font-style:italic}
 
 /* exercises */
 .opts{display:grid;gap:6px}

@@ -1,9 +1,10 @@
-// Testovi samih runnera (ne sadržaja lekcija): JavaScript u workeru, DOM u okviru, lažni server,
+// Testovi samih runnera (ne sadržaja lekcija): JavaScript u workeru, DOM u okviru, SQL, lažni server,
 // ispis konzole, brojevi linija grešaka, zaštita od beskonačnih petlji i od napuštanja stranice.
 // Upotreba: node scripts/provjeri-runnere.mjs
 import { fileURLToPath } from 'node:url';
 import { otvoriUcionicu } from './lib/preglednik.mjs';
 
+const SQL_BAZA = "CREATE TABLE k (id INTEGER PRIMARY KEY, ime TEXT NOT NULL, grad TEXT); INSERT INTO k (ime, grad) VALUES ('Amra', 'Sarajevo'), ('Emir', 'Mostar');";
 const SLUCAJEVI = [
   // [naziv, jezik, kod, testovi, setup, provjera(r) → poruka greške ili '']
   ['js: ispis kao u konzoli', 'js', 'console.log("a", 1, [1, "x"], {ime: "Amra", n: null, "za-li": true}, undefined, 2.5)', [], '',
@@ -81,6 +82,21 @@ const SLUCAJEVI = [
     r => r.out === '1 string null\n' ? '' : JSON.stringify(r)],
   ['dom: fetch i prikaz', 'dom', 'const r = await fetch("/api/klijenti");\nconst d = await r.json();\ndocument.body.innerHTML = d.map(k => `<p>${k.name}</p>`).join("");', [], '',
     r => r.stranica === 'Amra Kovačević\nEmir Hodžić\nSelma Begić' ? '' : JSON.stringify(r)],
+  ['sql: rezultati redom, prazan SELECT sa kolonama, poruka za INSERT', 'sql', "INSERT INTO k (ime, grad) VALUES ('Selma', 'Tuzla');\nSELECT ime FROM k WHERE grad = 'Zenica';\nSELECT ime\nFROM k\nORDER BY ime;",
+    [{ opis: 'redoslijed', ocekivano: [['Amra'], ['Emir'], ['Selma']], redoslijed: true }, { opis: 'upit poslije', upit: 'SELECT COUNT(*) FROM k', ocekivano: [[3]] }], SQL_BAZA,
+    r => r.ok && r.tests.every(t => t.ok) && JSON.stringify(r.blokovi) === JSON.stringify([{ poruka: '✓ INSERT — dodano redova: 1' }, { tabela: { cols: ['ime'], rows: [] } }, { tabela: { cols: ['ime'], rows: [['Amra'], ['Emir'], ['Selma']] } }]) ? '' : JSON.stringify(r)],
+  ['sql: pogrešan redoslijed obara test sa redoslijed', 'sql', 'SELECT ime FROM k ORDER BY ime DESC;', [{ opis: 'r', ocekivano: [['Amra'], ['Emir']], redoslijed: true }], SQL_BAZA,
+    r => r.ok && r.tests[0].ok === false ? '' : JSON.stringify(r)],
+  ['sql: sintaksna greška sa linijom, raniji rezultat ostaje', 'sql', 'SELECT ime FROM k;\nSELECT ime\nFORM k;', [{ opis: 't', ocekivano: [] }], SQL_BAZA,
+    r => !r.ok && r.errLine === 3 && /linija 3/.test(r.err) && r.blokovi.length === 1 && r.tests[0].ok === null ? '' : JSON.stringify(r)],
+  ['sql: nepostojeća kolona i nezatvoren navodnik', 'sql', "SELECT ime,\n  gradd\nFROM k;", [], SQL_BAZA,
+    r => r.errLine === 2 && /no such column: gradd/.test(r.err) ? '' : JSON.stringify(r)],
+  ['sql: ograničenje pada na liniji naredbe', 'sql', "INSERT INTO k (ime) VALUES ('Lejla');\nINSERT INTO k (ime, grad)\nVALUES (NULL, 'Bihać');", [], SQL_BAZA,
+    r => r.errLine === 2 && /NOT NULL constraint failed: k.ime/.test(r.err) && r.out === '✓ INSERT — dodano redova: 1\n' ? '' : JSON.stringify(r)],
+  ['sql: agregat u WHERE', 'sql', 'SELECT grad, COUNT(*)\nFROM k\nWHERE COUNT(*) > 1\nGROUP BY grad;', [], SQL_BAZA,
+    r => r.errLine === 3 ? '' : JSON.stringify(r)],
+  ['sql: transakcija i ROLLBACK', 'sql', "BEGIN;\nDELETE FROM k;\nROLLBACK;\nSELECT COUNT(*) AS broj FROM k;", [], SQL_BAZA,
+    r => r.ok && r.out === '✓ BEGIN — transakcija je počela\n✓ DELETE — obrisano redova: 2\n✓ ROLLBACK — izmjene iz transakcije su poništene\n' && JSON.stringify(r.tabele) === JSON.stringify([{ cols: ['broj'], rows: [[2]] }]) ? '' : JSON.stringify(r)],
   ['dom: element u konzoli', 'dom', 'console.log(document.querySelector("#b"), document.querySelectorAll("li").length);', [], '<button id="b" class="x">Klik</button>',
     r => r.out === '<button id="b" class="x">Klik</button> 0\n' ? '' : JSON.stringify(r)],
 ];
@@ -108,7 +124,7 @@ export async function provjeriRunnere(u) {
     try {
       r = await u.page.evaluate(async ([j, k, t, s]) => {
         const x = await RUN[j](k, t, s);
-        return x && { ok: x.ok, out: x.out, err: x.err, errType: x.errType, errLine: x.errLine ?? null, tests: x.tests, stranica: x.stranica };
+        return x && { ok: x.ok, out: x.out, err: x.err, errType: x.errType, errLine: x.errLine ?? null, tests: x.tests, stranica: x.stranica, blokovi: x.blokovi, tabele: x.tabele };
       }, [jezik, kod, testovi, setup]);
     } catch (e) { greske.push(`${naziv}: ${e.message.split('\n')[0]}`); continue; }
     const g = r ? provjera(r) : 'runner nije dostupan';

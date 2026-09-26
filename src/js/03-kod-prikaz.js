@@ -57,13 +57,23 @@ function wireEditor(id, lang) {
 
 function outHtml(r, lang) {
   if (!r) return `<div class="out"><span class="err">${lang === 'python' ? 'Python se nije mogao učitati u ovom pregledniku. Koristi dugme „Provjeri sa tutorom“.' : 'Izvršavanje nije dostupno.'}</span></div>`;
-  let h = `<div class="out"><span class="lbl">Izlaz</span>${esc(r.out || '') || (r.ok && !(r.tabele || []).length ? '<span style="opacity:.6">(ništa nije ispisano)</span>' : '')}`;
-  for (const t of r.tabele || []) h += `<table class="res"><tr>${t.cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr>${t.rows.slice(0, 50).map(row => `<tr>${row.map(v => `<td>${esc(v === null ? 'NULL' : v)}</td>`).join('')}</tr>`).join('')}</table>`;
+  let h = `<div class="out"><span class="lbl">Izlaz</span>`;
+  if (r.blokovi) h += r.blokovi.map(b => b.tabela ? tabelaHtml(b.tabela) : `<span class="info">${esc(b.poruka)}</span>\n`).join('')
+    || (r.ok ? '<span style="opacity:.6">(nema naredbi)</span>' : '');
+  else h += esc(r.out || '') || (r.ok && !(r.tabele || []).length ? '<span style="opacity:.6">(ništa nije ispisano)</span>' : '');
   if (!r.ok) h += `<span class="err">${esc(r.err)}</span>`;
   h += '</div>';
   const objasnjenje = r.ok ? '' : objasnjenjeGreske(r.errType, lang);
   if (objasnjenje) h += `<div class="hint"><b>Šta ova greška znači:</b> ${esc(objasnjenje)}</div>`;
   return h;
+}
+// Rezultat SELECT-a; i prazan rezultat pokaže kolone, da se vidi da je upit prošao, ali nije našao redove.
+// cls: 'res' za tamni izlaz, 'tbl' za svijetlu podlogu (tabele baze iznad upita).
+function tabelaHtml(t, cls = 'res') {
+  const redovi = t.rows.slice(0, 50).map(row => `<tr>${row.map(v => `<td>${esc(v === null ? 'NULL' : v)}</td>`).join('')}</tr>`).join('');
+  const nema = t.rows.length ? '' : `<tr><td colspan="${t.cols.length}" class="prazan">(0 redova)</td></tr>`;
+  const vise = t.rows.length > 50 ? `<tr><td colspan="${t.cols.length}" class="prazan">… još ${t.rows.length - 50} redova</td></tr>` : '';
+  return `<table class="${cls}"><tr>${t.cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr>${redovi}${nema}${vise}</table>`;
 }
 function testsHtml(testovi, rez = []) {
   return testovi.map((t, i) => {
