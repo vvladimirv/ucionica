@@ -9,7 +9,7 @@ pravom mini-stranicom, SQL preko sql.js. Primjeri su iz stvarnih projekata (inho
 | --- | --- | --- |
 | 1 · Python od nule | 9 lekcija: print, varijable, if, liste, rječnici, funkcije, greške, klase, čitanje Flask rute | gotovo |
 | 2 · JavaScript | 8 lekcija: konzola, if/===, nizovi, objekti i JSON, funkcije, DOM, događaji, fetch/async | gotovo |
-| 3 · SQL i baze | SELECT, WHERE, JOIN, GROUP BY, INSERT/UPDATE, transakcije | sljedeća faza (runner je spreman) |
+| 3 · SQL i baze | 5 lekcija: SELECT, GROUP BY, JOIN, izmjene i pravila, transakcije/parametri/indeksi | gotovo |
 | 4 · Teme | 12 tema (web, baze, arhitektura, testiranje, sigurnost…) + rječnik | čitanje i kviz |
 
 Svaka lekcija je niz koraka: objašnjenje, primjer sa klikabilnim linijama, „predvidi rezultat“,
@@ -25,6 +25,7 @@ src/js/NN-*.js                                 moduli; spajaju se po abecedi ime
   02-izvrsavanje-js.js   JavaScript runneri (Worker i DOM okvir), lažni server, čuvar petlji
   03-kod-prikaz.js       isticanje sintakse, uređivač, prikaz izlaza
   1x-lekcije-py-*.js     Dio 1 · Python        2x-lekcije-js-*.js   Dio 2 · JavaScript
+  3x-lekcije-sql-*.js    Dio 3 · SQL (30-… sadrži i učioničku bazu BAZA)
   40-teme.js             Dio 4 · teme, dijagrami i rječnik
   5x-*.js                napredak i meni, vrste koraka, tutor, prikaz tema
   59-start.js            događaji i pokretanje (zadnji)
@@ -48,7 +49,8 @@ npm run pregled    # lokalno: http://127.0.0.1:8080
 `npm test` redom provjerava:
 
 1. **strukturu** svih koraka (obavezna polja, indeksi, broj praznina, uparene HTML oznake);
-2. **runnere** (47 slučajeva: linije grešaka, prekid beskonačnih petlji, lažni server, zaštita stranice);
+2. **runnere** (56 slučajeva: linije grešaka u JS-u i SQL-u, prekid beskonačnih petlji, lažni server,
+   rezultati SQL naredbi redom, zaštita stranice);
 3. **izvršavanje** svakog primjera, „predvidi“ koraka (izlaz mora odgovarati tačnoj opciji),
    greške i zadatka (rješenje prolazi testove, početni kod ne);
 4. **UI** — prolaz kroz sve korake kao učenik, teme, rječnik i širinu telefona (390 px).

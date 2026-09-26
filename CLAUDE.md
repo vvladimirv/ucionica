@@ -18,9 +18,13 @@ Kurs je jedna HTML stranica (Claude artefakt) sastavljena iz `src/`. Stanje i sl
   `ocekuj`, `jednako`, `IZLAZ`, `KOD`, `saVrijednostima` (js) i `T.*` (dom).
 - `saVrijednostima` zamjenjuje samo prvu liniju deklaracije: početne vrijednosti koje testovi
   mijenjaju moraju biti u jednom redu.
+- SQL koraci koriste `setup: BAZA` (učionička baza u `30-lekcije-sql-a.js`); testovi su
+  `{opis, upit?, ocekivano, redoslijed?}` ili `{opis, kodSadrzi}`. Tekst u SQL-u uvijek u jednostrukim
+  navodnicima; gdje se SQLite i PostgreSQL razlikuju, reci to (npr. strani ključevi, dvostruki navodnici).
 - „Poredaj“ prihvata samo jedan redoslijed: biraj linije gdje je tačan redoslijed jedinstven.
 - Kod iz inhome/Sole-KP citiraj samo kako stvarno piše u tim repozitorijima (sa putanjom);
   ne izmišljaj „stvarni kod“.
-- Poslije svake izmjene: `npm test` mora završiti sa `SVE PROŠLO`. Tekst „pada na liniji N“ u
+- Poslije svake izmjene: `npm test` mora završiti sa `SVE PROŠLO` i izlaznim kodom 0 (u lancu komandi
+  koristi `pipefail` ili provjeri `$?` — `npm test | tail` sakrije pad). Tekst „pada na liniji N“ u
   pitanju „nađi grešku“ provjera verifikuje, kao i da izlaz „predvidi“ koraka odgovara tačnoj opciji.
 - Objava: samo `dist/index.html` na postojeći URL (vidi README). Na kraju sesije ažuriraj `STATUS.md`.
