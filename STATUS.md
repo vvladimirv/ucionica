@@ -15,8 +15,9 @@ Ažurirano: 2026-09-26.
   `scripts/uvezi.mjs` je dokazao da je uvoz bez gubitaka.
 - `npm test`: 17 lekcija, 203 koraka, 47 slučajeva runnera, 129 izvršnih provjera, UI prolaz i
   telefon (390 px) — sve prolazi.
-- Artefakt: <https://claude.ai/artifact/V4DU7enjHTwhCZ2a1vMEq8>. Objavljuje se samo `dist/index.html`;
-  runtime fajlovi (`py/`, `sql/`) se ne mijenjaju.
+- Artefakt: <https://claude.ai/artifact/V4DU7enjHTwhCZ2a1vMEq8>. Zadnja objava: verzija 6
+  (`1790409771-0c3a`, 2026-09-26) = commit `357387f` (sa Dijelom 2). Objavljuje se samo `dist/index.html`;
+  runtime fajlovi (`py/`, `sql/`) se ne mijenjaju. Capabilities `sample`, `db` i `user` su zadržane.
 
 ## Novo u fazi „Dio 2 · JavaScript“
 
