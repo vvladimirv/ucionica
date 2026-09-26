@@ -14,7 +14,7 @@ function renderTemaView() {
   const m = TEME.find(t => t.id === cur.id); const i = TEME.indexOf(m); const p = P.data.teme[m.id] || {};
   $('#main').innerHTML = `
   <div class="lhead"><div class="eyebrow">Dio 4 · Tema ${m.n} od ${TEME.length - 1}</div><h2>${esc(m.naslov)}</h2><p class="muted">${esc(m.pod)}</p>
-  <div class="note warn small">Ova tema još nije pretvorena u interaktivne korake. Najbolje je prvo proći osnove Pythona (Dio 1) i JavaScripta (Dio 2); za sve nejasno pitaj tutora.</div></div>
+  <div class="note warn small">Ova tema još nije pretvorena u interaktivne korake. Najbolje je prvo proći dijelove 1–3 (Python, JavaScript, SQL); za sve nejasno pitaj tutora.</div></div>
   <section class="card"><div class="sec-t">Ideja</div>${m.ideja.map(t => `<p>${t}</p>`).join('')}${m.analogija ? `<div class="analogy"><b>Analogija:</b> ${esc(m.analogija)}</div>` : ''}</section>
   ${m.dia ? `<section class="card"><div class="sec-t">Dijagram</div><div class="dia">${DIA[m.dia]()}</div></section>` : ''}
   <section class="card"><div class="sec-t">Tvoj kod</div>${m.kod.map(k => `<div class="snip"><div class="snip-h"><span class="tag ${k.t}">${tagTxt[k.t]}</span><span>${esc(k.p)}</span></div><pre>${esc(k.k)}</pre><div class="snip-o">${esc(k.o)}</div></div>`).join('')}</section>

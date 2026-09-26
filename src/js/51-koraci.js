@@ -11,7 +11,8 @@
 // jezik: 'python' (podrazumijevano) | 'js' (konzola, Worker) | 'dom' (stranica u okviru) | 'sql'
 // setup: za sql SQL koji pripremi bazu, za dom HTML stranice u okviru prije pokretanja koda.
 // Testovi: python assert (IZLAZ, KOD, _sa_vrijednostima); js/dom ocekuj(stvarno, ocekivano, poruka),
-// js još IZLAZ, KOD, saVrijednostima({ime: vrijednost}); dom T.klikni/upisi/posalji/tekst/broj/stranica/IZLAZ.
+// js još IZLAZ, KOD, saVrijednostima({ime: vrijednost}); dom T.klikni/upisi/posalji/tekst/broj/stranica/IZLAZ;
+// sql {opis, upit?, ocekivano: [[…]], redoslijed?} (bez upita: zadnji SELECT) ili {opis, kodSadrzi: ['regex']}.
 // ============================================================================
 // Okruženje koraka iznad koda: za dom HTML stranice (da se vide id-jevi i klase), za sql tabele baze
 // (popuni ih popuniBazu poslije iscrtavanja, jer se sql.js učitava asinhrono).

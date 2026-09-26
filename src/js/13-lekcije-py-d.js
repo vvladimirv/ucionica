@@ -102,7 +102,7 @@ def create_klijent():
     { tip: 'tekst', naslov: 'Završio si Python osnove 🎉', html: `
       <p>Sad znaš pročitati i napisati: varijable i tipove, if/elif/else, liste i petlje, rječnike, funkcije, greške, klase i Decimal, import i dekoratore — i razumiješ stvarnu rutu iz svog projekta.</p>
       <p><b>Sljedeći koraci:</b></p>
-      <ul><li><b>Dio 2 · JavaScript</b>: isti pojmovi u jeziku preglednika — frontend tvojih aplikacija. Ide brže, jer ideje već znaš.</li><li><b>Dio 4 · Teme</b> sada će biti mnogo jasniji: preporuka je <b>Tema 0 (put jednog klika)</b> i <b>Tema 5 (arhitektura)</b>.</li><li>Dio 3 (SQL) stiže kao sljedeća faza u istom obliku.</li><li>Otvori bilo koji fajl iz inhome ili Sole-KP, kopiraj funkciju i pitaj tutora da ti je objasni liniju po liniju.</li></ul>
+      <ul><li><b>Dio 2 · JavaScript</b>: isti pojmovi u jeziku preglednika — frontend tvojih aplikacija. Ide brže, jer ideje već znaš.</li><li><b>Dio 4 · Teme</b> sada će biti mnogo jasniji: preporuka je <b>Tema 0 (put jednog klika)</b> i <b>Tema 5 (arhitektura)</b>.</li><li><b>Dio 3 · SQL i baze</b>: pitanja pravoj bazi, od SELECT-a do transakcija. Ne zavisi od JavaScripta, pa može i odmah.</li><li>Otvori bilo koji fajl iz inhome ili Sole-KP, kopiraj funkciju i pitaj tutora da ti je objasni liniju po liniju.</li></ul>
       <div class="row"><button class="btn primary" data-go="lek:js1:0">Dio 2: JavaScript →</button><button class="btn" data-go="tema:m0">Tema 0: put jednog klika</button><button class="btn" data-go="tema:m5">Tema 5: arhitektura koda</button></div>` },
   ],
 });
