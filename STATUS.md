@@ -93,3 +93,5 @@ Kod iz inhome i Sole-KP citiraj samo iz samih repozitorija. Postojeći citati su
 | --- | --- | --- | --- | --- |
 | 6 | `1790409771-0c3a` | 2026-09-26 | `357387f` | Dio 2 · JavaScript |
 | 7 | `1790411547-d968` | 2026-09-26 | `d9ad761` | Dio 3 · SQL |
+| 8 | `1790537289-3496` | ? | — (nije bilo u gitu; vraćeno u `ad9db16`) | Dio 5 · ag1–ag7, rezervni tutor |
+| 9 | `1791047870-4b9c` | 2026-10-03 | `ad9db16` | Dio 5 · ag8–ag10 (Claude Code, MCP, posao) |
