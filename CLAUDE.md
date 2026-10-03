@@ -10,7 +10,11 @@ Kurs je jedna HTML stranica (Claude artefakt) sastavljena iz `src/`. Stanje i sl
 - Uređuje se samo `src/`. `dist/` je generisan i nije u gitu.
 - Redoslijed modula = abeceda imena fajla (`01`…`59`). Lekcije: `1x` Python (`LEKCIJE_PY`),
   `2x` JavaScript (`LEKCIJE_JS`), `3x` SQL (`LEKCIJE_SQL`); moraju biti prije `50-…`.
-  Teme: `40-teme.js` (Dio 4 i tema 11) i `41-teme-agenti.js` (Dio 5: teme 12–16, `dio: 5`).
+  `35`–`39` Dio 5 · Rad sa AI agentima (`LEKCIJE_AG`; redoslijed lekcija = redoslijed `push`, završna je
+  `ag7` u `39-…`; id-jeve ne mijenjaj, napredak učenika je vezan za njih). Teme su u `40-teme.js`.
+- Koraci bez izvršavanja: `jezik: 'tekst'` (zahtjev agentu, prompt; testovi `ima`/`bilo`/`nema`/`maxLinija`/
+  `minRijeci`, opis na vrhu `04-izvrsavanje-tekst.js`) i `jezik: 'diff'`; `predvidi`/`greska`/`primjer` tada
+  imaju `bezPokretanja: true`.
 - Šema koraka i pomoćnici za testove su opisani na vrhu `src/js/51-koraci.js`.
 - Kod lekcija je u template literalima:
   - Python primjeri ne smiju imati obrnutu kosu crtu (`\`);

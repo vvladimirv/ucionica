@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { ucitajLekcije, jezikKoraka } from './lib/lekcije.mjs';
 
 // Polja po vrsti koraka; ista šema je opisana na vrhu src/js/04-koraci.js.
-const ZAJEDNICKA = ['naslov', 'jezik', 'setup'];
+const ZAJEDNICKA = ['naslov', 'jezik', 'setup', 'bezPokretanja'];
 export const SHEMA = {
   tekst: { obavezno: ['html'], moguce: [] },
   primjer: { obavezno: ['kod'], moguce: ['uvod', 'obj', 'poslije', 'bezPokretanja'] },
@@ -19,7 +19,9 @@ export const SHEMA = {
 // Polja koja se ubacuju kao HTML (moraju imati uparene oznake) i polja koja se escape-uju (ne smiju imati oznake).
 const HTML_POLJA = ['html', 'uvod', 'poslije', 'pitanje', 'obj', 'opis', 'objRj'];
 const TEKST_POLJA = ['p', 'e', 'naslov'];
-const JEZICI = ['python', 'js', 'dom', 'sql'];
+const JEZICI = ['python', 'js', 'dom', 'sql', 'tekst', 'diff'];
+// Provjere teksta (runner tekst, 04-izvrsavanje-tekst.js).
+const TEKST_PROVJERE = ['ima', 'bilo', 'nema', 'maxLinija', 'minRijeci', 'maxZnakova'];
 const PRAZNE = new Set(['br', 'hr', 'img', 'input', 'meta', 'link', 'wbr', 'source']);
 
 export function provjeriHtml(html) {
@@ -54,6 +56,7 @@ export function provjeriStrukturu() {
       for (const p of Object.keys(s)) if (p !== 'tip' && !sh.obavezno.includes(p) && !sh.moguce.includes(p) && !ZAJEDNICKA.includes(p)) greske.push(`${gdje}: nepoznato polje ${p}`);
       const jezik = jezikKoraka(s);
       if (!JEZICI.includes(jezik)) greske.push(`${gdje}: nepoznat jezik ${jezik}`);
+      if (jezik === 'diff' && !s.bezPokretanja && s.tip !== 'zadatak') greske.push(`${gdje}: diff je samo prikaz (treba bezPokretanja)`);
       if (s.setup && jezik !== 'sql' && jezik !== 'dom') greske.push(`${gdje}: setup ima smisla samo za sql i dom`);
       const linija = s.kod ? s.kod.split('\n').length : 0;
       if ((s.tip === 'predvidi' || s.tip === 'kviz')) {
@@ -73,7 +76,7 @@ export function provjeriStrukturu() {
       if (s.tip === 'poredaj' && new Set(s.linije).size !== s.linije.length) upozorenja.push(`${gdje}: iste linije se ponavljaju (više tačnih redoslijeda, a prihvata se samo jedan)`);
       if (s.tip === 'zadatak') {
         if (!Array.isArray(s.testovi) || !s.testovi.length) greske.push(`${gdje}: zadatak nema testove`);
-        for (const [i, t] of (s.testovi || []).entries()) if (!t.opis || !(t.kod || t.upit !== undefined || t.ocekivano || t.kodSadrzi)) greske.push(`${gdje}: test ${i + 1} nema opis ili provjeru`);
+        for (const [i, t] of (s.testovi || []).entries()) if (!t.opis || !(t.kod || t.upit !== undefined || t.ocekivano || t.kodSadrzi || TEKST_PROVJERE.some(p => t[p] !== undefined))) greske.push(`${gdje}: test ${i + 1} nema opis ili provjeru`);
       }
       // HTML u poljima koja idu kroz innerHTML
       for (const p of HTML_POLJA) {
@@ -93,7 +96,8 @@ export function provjeriStrukturu() {
     for (const [qi, q] of (m.kviz || []).entries()) if (!(q.t >= 0 && q.t < q.o.length)) greske.push(`tema ${m.id}: kviz ${qi + 1}: tačan odgovor van opcija`);
     for (const k of m.kod || []) if (!['dobar', 'los', 'mjes'].includes(k.t)) greske.push(`tema ${m.id}: kod "${k.p}": nepoznata oznaka ${k.t}`);
   }
-  for (const [t, , m] of rjecnik) if (m && !teme.some(x => x.id === m)) greske.push(`rječnik ${t}: nema teme ${m}`);
+  const sveLekcije = dijelovi.flatMap(d => d.lekcije);
+  for (const [t, , m] of rjecnik) if (m && !(m.startsWith('lek:') ? sveLekcije.some(l => 'lek:' + l.id === m) : teme.some(x => x.id === m))) greske.push(`rječnik ${t}: nema teme ni lekcije ${m}`);
   return { greske, upozorenja, brojKoraka, brojLekcija: dijelovi.reduce((a, d) => a + d.lekcije.length, 0), brojTema: teme.length };
 }
 

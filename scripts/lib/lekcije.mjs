@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import { SRC, moduli } from '../build.mjs';
 
 export const moduliLekcija = () => moduli().filter(m => /^\d\d-lekcije-/.test(m));
-export const DIJELOVI_IDS = [['py', 'LEKCIJE_PY'], ['js', 'LEKCIJE_JS'], ['sql', 'LEKCIJE_SQL']];
+export const DIJELOVI_IDS = [['py', 'LEKCIJE_PY'], ['js', 'LEKCIJE_JS'], ['sql', 'LEKCIJE_SQL'], ['ag', 'LEKCIJE_AG']];
 
 export function ucitajLekcije() {
   const ctx = vm.createContext({});

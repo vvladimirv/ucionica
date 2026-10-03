@@ -76,7 +76,7 @@ export async function provjeriTelefon() {
   const u = await otvoriUcionicu({ sirina: 390, visina: 844 });
   const greske = [];
   const { dijelovi } = ucitajLekcije();
-  const mete = [...dijelovi.flatMap(d => d.lekcije.flatMap(l => l.koraci.map((s, k) => [`lek:${l.id}:${k}`, s.tip]))), ['tema:m0'], ['tema:m4'], ['tema:m12'], ['tema:m14'], ['tema:m16'], ['rjecnik']];
+  const mete = [...dijelovi.flatMap(d => d.lekcije.flatMap(l => l.koraci.map((s, k) => [`lek:${l.id}:${k}`, s.tip]))), ['tema:m0'], ['tema:m4'], ['rjecnik']];
   for (const [cilj] of mete) {
     await u.page.evaluate(c => go(c), cilj);
     const siroko = await u.page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
