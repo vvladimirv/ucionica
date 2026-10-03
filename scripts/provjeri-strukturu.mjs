@@ -37,7 +37,7 @@ export function provjeriHtml(html) {
 }
 
 export function provjeriStrukturu() {
-  const { dijelovi, teme } = ucitajLekcije();
+  const { dijelovi, teme, rjecnik, dia } = ucitajLekcije();
   const greske = [], upozorenja = [], ids = new Set();
   let brojKoraka = 0;
   for (const d of dijelovi) for (const [li, lek] of d.lekcije.entries()) {
@@ -87,6 +87,13 @@ export function provjeriStrukturu() {
     }
   }
   for (const m of teme) for (const p of ['id', 'naslov', 'ideja', 'kod', 'greske', 'kviz', 'vjezba', 'agent']) if (!m[p]) greske.push(`tema ${m.id}: nema ${p}`);
+  if (new Set(teme.map(m => m.id)).size !== teme.length) greske.push('teme: id se ponavlja');
+  for (const m of teme) {
+    if (m.dia && !(m.dia in dia)) greske.push(`tema ${m.id}: nema dijagrama ${m.dia}`);
+    for (const [qi, q] of (m.kviz || []).entries()) if (!(q.t >= 0 && q.t < q.o.length)) greske.push(`tema ${m.id}: kviz ${qi + 1}: tačan odgovor van opcija`);
+    for (const k of m.kod || []) if (!['dobar', 'los', 'mjes'].includes(k.t)) greske.push(`tema ${m.id}: kod "${k.p}": nepoznata oznaka ${k.t}`);
+  }
+  for (const [t, , m] of rjecnik) if (m && !teme.some(x => x.id === m)) greske.push(`rječnik ${t}: nema teme ${m}`);
   return { greske, upozorenja, brojKoraka, brojLekcija: dijelovi.reduce((a, d) => a + d.lekcije.length, 0), brojTema: teme.length };
 }
 

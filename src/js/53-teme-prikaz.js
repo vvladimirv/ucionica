@@ -13,11 +13,11 @@ const tagTxt = { dobar: '✓ dobar primjer', los: '⚠ problematično', mjes: '�
 function renderTemaView() {
   const m = TEME.find(t => t.id === cur.id); const i = TEME.indexOf(m); const p = P.data.teme[m.id] || {};
   $('#main').innerHTML = `
-  <div class="lhead"><div class="eyebrow">Dio 4 · Tema ${m.n} od ${TEME.length - 1}</div><h2>${esc(m.naslov)}</h2><p class="muted">${esc(m.pod)}</p>
-  <div class="note warn small">Ova tema još nije pretvorena u interaktivne korake. Najbolje je prvo proći dijelove 1–3 (Python, JavaScript, SQL); za sve nejasno pitaj tutora.</div></div>
+  <div class="lhead"><div class="eyebrow">Dio ${m.dio || 4} · Tema ${m.n} od ${TEME.length - 1}</div><h2>${esc(m.naslov)}</h2><p class="muted">${esc(m.pod)}</p>
+  <div class="note warn small">${m.dio === 5 ? 'Ova tema je čitanje i kviz. ' + esc(m.napomena || '') : 'Ova tema još nije pretvorena u interaktivne korake. Najbolje je prvo proći dijelove 1–3 (Python, JavaScript, SQL); za sve nejasno pitaj tutora.'}</div></div>
   <section class="card"><div class="sec-t">Ideja</div>${m.ideja.map(t => `<p>${t}</p>`).join('')}${m.analogija ? `<div class="analogy"><b>Analogija:</b> ${esc(m.analogija)}</div>` : ''}</section>
   ${m.dia ? `<section class="card"><div class="sec-t">Dijagram</div><div class="dia">${DIA[m.dia]()}</div></section>` : ''}
-  <section class="card"><div class="sec-t">Tvoj kod</div>${m.kod.map(k => `<div class="snip"><div class="snip-h"><span class="tag ${k.t}">${tagTxt[k.t]}</span><span>${esc(k.p)}</span></div><pre>${esc(k.k)}</pre><div class="snip-o">${esc(k.o)}</div></div>`).join('')}</section>
+  <section class="card"><div class="sec-t">${esc(m.kodNaslov || 'Tvoj kod')}</div>${m.kod.map(k => `<div class="snip"><div class="snip-h"><span class="tag ${k.t}">${tagTxt[k.t]}</span><span>${esc(k.p)}</span></div><pre>${esc(k.k)}</pre><div class="snip-o">${esc(k.o)}</div></div>`).join('')}</section>
   <section class="card"><div class="sec-t">Česte greške</div><ul class="greske">${m.greske.map(g => `<li>${esc(g)}</li>`).join('')}</ul></section>
   <section class="card" data-kviz="${m.id}"><div class="sec-t">Kviz</div>${m.kviz.map((q, qi) => `<div class="q" data-q="${qi}"><div class="q-p">${qi + 1}. ${esc(q.p)}</div><div class="opts">${q.o.map((o, oi) => `<button data-topt="${oi}">${esc(o)}</button>`).join('')}</div><div class="q-obj" hidden></div></div>`).join('')}<div class="score" data-score>${p.kviz ? 'Zadnji rezultat: ' + p.kviz : ''}</div></section>
   <section class="card"><div class="sec-t">Vježba</div><p style="white-space:pre-wrap">${esc(m.vjezba.z)}</p><details class="ex"><summary>Nagovještaj</summary><div><p>${esc(m.vjezba.h)}</p></div></details><details class="ex"><summary>Rješenje</summary><div><pre>${esc(m.vjezba.r)}</pre><p class="small">${esc(m.vjezba.obj)}</p></div></details></section>

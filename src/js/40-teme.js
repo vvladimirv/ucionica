@@ -685,7 +685,7 @@ export function isProUser() {
 <!-- + JS: klik i strelice ←/→ mijenjaju aria-selected, tabindex i hidden -->`, obj:'Button daje fokus i Enter/Space, role i aria govore čitaču ekrana šta je šta, tabindex="-1" drži samo aktivni tab u Tab redoslijedu (strelice vode kroz ostale).'},
   agent:['Chipovi u Postavkama (data-next-postavke-tab) su vizuelno tabovi, ali imaju role="group". Pretvori ih u WAI-ARIA tabs obrazac kao u dosijeu (app-next.js:710), uključujući strelice, i ažuriraj E2E testove.'],
 },
-{ id:'m11', n:'11', naslov:'Rad sa AI agentima', pod:'Sažetak nivoa 2: sistem oko agenta',
+{ id:'m11', n:'11', dio:5, naslov:'Rad sa AI agentima', pod:'Sažetak nivoa 2: sistem oko agenta',
   ideja:[
     'Agent (Claude Code, Codex) je brz programer bez pamćenja između sesija. Kvalitet rezultata zavisi od <b>sistema oko njega</b>: kratka memorija (CLAUDE.md/AGENTS.md sa pravilima, STATUS.md sa stanjem, historija u gitu), mali koraci sa commitom, i provjere koje mašina radi sama.',
     'Iz tvojih projekata: <b>pravilo prekršeno dva puta postaje test ili hook</b> (sw:stamp, test bijele liste); <b>crveni testovi znače stop</b>, ne „poznata baza“; <b>jedan agent = jedna grana/worktree</b>; <b>redizajn počinje inventarom funkcija</b>; dokumenti imaju jednog vlasnika i jedno mjesto.',

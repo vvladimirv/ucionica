@@ -61,7 +61,8 @@ function renderMenu() {
   };
   const temaBtn = t => { const p = P.data.teme[t.id] || {}; return `<button data-go="tema:${t.id}" aria-current="${cur.tip === 'tema' && cur.id === t.id}"><span class="n">${t.n}</span><span>${esc(t.naslov)}</span><span class="s ${p.done ? 'done' : ''}">${p.done ? '✓' : p.kviz || ''}</span></button>`; };
   const sadrzaj = DIJELOVI.map(d => `<div class="dio"><div class="dio-t">${esc(d.naslov)}</div>${d.lekcije.map(lekBtn).join('')}${!d.lekcije.length && d.uskoro ? `<div class="soon">${esc(d.uskoro)}</div>` : ''}</div>`).join('')
-    + (typeof TEME !== 'undefined' ? `<div class="dio"><div class="dio-t">Dio 4 · Teme (web, baze, arhitektura…)</div>${TEME.map(temaBtn).join('')}<button data-go="rjecnik" aria-current="${cur.tip === 'rjecnik'}"><span class="n">A–Ž</span><span>Rječnik pojmova</span><span></span></button></div>` : '');
+    + (typeof TEME !== 'undefined' ? `<div class="dio"><div class="dio-t">Dio 4 · Teme (web, baze, arhitektura…)</div>${TEME.filter(t => (t.dio || 4) === 4).map(temaBtn).join('')}</div>`
+      + `<div class="dio"><div class="dio-t">Dio 5 · Rad sa Claudeom i agentima</div>${TEME.filter(t => t.dio === 5).map(temaBtn).join('')}<button data-go="rjecnik" aria-current="${cur.tip === 'rjecnik'}"><span class="n">A–Ž</span><span>Rječnik pojmova</span><span></span></button></div>` : '');
   // Na telefonu je meni sklopljen (inače bi 30+ stavki stajalo iznad lekcije); na širem ekranu je uvijek otvoren.
   const lek = cur.tip === 'lek' && findLek(cur.id);
   const dio = lek && DIJELOVI.find(d => d.lekcije.includes(lek));

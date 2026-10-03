@@ -10,6 +10,7 @@ Kurs je jedna HTML stranica (Claude artefakt) sastavljena iz `src/`. Stanje i sl
 - Uređuje se samo `src/`. `dist/` je generisan i nije u gitu.
 - Redoslijed modula = abeceda imena fajla (`01`…`59`). Lekcije: `1x` Python (`LEKCIJE_PY`),
   `2x` JavaScript (`LEKCIJE_JS`), `3x` SQL (`LEKCIJE_SQL`); moraju biti prije `50-…`.
+  Teme: `40-teme.js` (Dio 4 i tema 11) i `41-teme-agenti.js` (Dio 5: teme 12–16, `dio: 5`).
 - Šema koraka i pomoćnici za testove su opisani na vrhu `src/js/51-koraci.js`.
 - Kod lekcija je u template literalima:
   - Python primjeri ne smiju imati obrnutu kosu crtu (`\`);
@@ -22,6 +23,8 @@ Kurs je jedna HTML stranica (Claude artefakt) sastavljena iz `src/`. Stanje i sl
   `{opis, upit?, ocekivano, redoslijed?}` ili `{opis, kodSadrzi}`. Tekst u SQL-u uvijek u jednostrukim
   navodnicima; gdje se SQLite i PostgreSQL razlikuju, reci to (npr. strani ključevi, dvostruki navodnici).
 - „Poredaj“ prihvata samo jedan redoslijed: biraj linije gdje je tačan redoslijed jedinstven.
+- Činjenice o Claude Code/Claudeu (komande, opcije, ograničenja) provjeri u zvaničnoj dokumentaciji
+  (code.claude.com, platform.claude.com) prije pisanja; ne piši iz sjećanja.
 - Kod iz inhome/Sole-KP citiraj samo kako stvarno piše u tim repozitorijima (sa putanjom);
   ne izmišljaj „stvarni kod“.
 - Poslije svake izmjene: `npm test` mora završiti sa `SVE PROŠLO` i izlaznim kodom 0 (u lancu komandi
