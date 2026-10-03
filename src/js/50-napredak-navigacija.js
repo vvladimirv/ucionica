@@ -6,6 +6,8 @@ const DIJELOVI = [
   { id: 'py', naslov: 'Dio 1 · Python od nule', lekcije: typeof LEKCIJE_PY !== 'undefined' ? LEKCIJE_PY : [] },
   { id: 'js', naslov: 'Dio 2 · JavaScript', lekcije: typeof LEKCIJE_JS !== 'undefined' ? LEKCIJE_JS : [], uskoro: 'Sljedeća faza: varijable, funkcije, nizovi i objekti, DOM, događaji, fetch.' },
   { id: 'sql', naslov: 'Dio 3 · SQL i baze', lekcije: typeof LEKCIJE_SQL !== 'undefined' ? LEKCIJE_SQL : [], uskoro: 'Sljedeća faza: SELECT, WHERE, JOIN, GROUP BY, INSERT/UPDATE, transakcije.' },
+  // poslijeTema: u meniju i redoslijedu dolazi poslije Dijela 4 (teme)
+  { id: 'ag', naslov: 'Dio 5 · Rad sa AI agentima', lekcije: typeof LEKCIJE_AG !== 'undefined' ? LEKCIJE_AG : [], poslijeTema: true },
 ];
 const findLek = id => DIJELOVI.flatMap(d => d.lekcije).find(l => l.id === id);
 let cur = { tip: 'lek', id: null, k: 0 };
@@ -60,8 +62,10 @@ function renderMenu() {
     return `<button data-go="lek:${l.id}" aria-current="${cur.tip === 'lek' && cur.id === l.id}"><span class="n">${i + 1}</span><span>${esc(l.naslov)}</span>${s}</button>`;
   };
   const temaBtn = t => { const p = P.data.teme[t.id] || {}; return `<button data-go="tema:${t.id}" aria-current="${cur.tip === 'tema' && cur.id === t.id}"><span class="n">${t.n}</span><span>${esc(t.naslov)}</span><span class="s ${p.done ? 'done' : ''}">${p.done ? '✓' : p.kviz || ''}</span></button>`; };
-  const sadrzaj = DIJELOVI.map(d => `<div class="dio"><div class="dio-t">${esc(d.naslov)}</div>${d.lekcije.map(lekBtn).join('')}${!d.lekcije.length && d.uskoro ? `<div class="soon">${esc(d.uskoro)}</div>` : ''}</div>`).join('')
-    + (typeof TEME !== 'undefined' ? `<div class="dio"><div class="dio-t">Dio 4 · Teme (web, baze, arhitektura…)</div>${TEME.map(temaBtn).join('')}<button data-go="rjecnik" aria-current="${cur.tip === 'rjecnik'}"><span class="n">A–Ž</span><span>Rječnik pojmova</span><span></span></button></div>` : '');
+  const dioHtml = d => `<div class="dio"><div class="dio-t">${esc(d.naslov)}</div>${d.lekcije.map(lekBtn).join('')}${!d.lekcije.length && d.uskoro ? `<div class="soon">${esc(d.uskoro)}</div>` : ''}</div>`;
+  const sadrzaj = DIJELOVI.filter(d => !d.poslijeTema).map(dioHtml).join('')
+    + (typeof TEME !== 'undefined' ? `<div class="dio"><div class="dio-t">Dio 4 · Teme (web, baze, arhitektura…)</div>${TEME.map(temaBtn).join('')}<button data-go="rjecnik" aria-current="${cur.tip === 'rjecnik'}"><span class="n">A–Ž</span><span>Rječnik pojmova</span><span></span></button></div>` : '')
+    + DIJELOVI.filter(d => d.poslijeTema && d.lekcije.length).map(dioHtml).join('');
   // Na telefonu je meni sklopljen (inače bi 30+ stavki stajalo iznad lekcije); na širem ekranu je uvijek otvoren.
   const lek = cur.tip === 'lek' && findLek(cur.id);
   const dio = lek && DIJELOVI.find(d => d.lekcije.includes(lek));

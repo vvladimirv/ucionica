@@ -685,46 +685,6 @@ export function isProUser() {
 <!-- + JS: klik i strelice ←/→ mijenjaju aria-selected, tabindex i hidden -->`, obj:'Button daje fokus i Enter/Space, role i aria govore čitaču ekrana šta je šta, tabindex="-1" drži samo aktivni tab u Tab redoslijedu (strelice vode kroz ostale).'},
   agent:['Chipovi u Postavkama (data-next-postavke-tab) su vizuelno tabovi, ali imaju role="group". Pretvori ih u WAI-ARIA tabs obrazac kao u dosijeu (app-next.js:710), uključujući strelice, i ažuriraj E2E testove.'],
 },
-{ id:'m11', n:'11', naslov:'Rad sa AI agentima', pod:'Sažetak nivoa 2: sistem oko agenta',
-  ideja:[
-    'Agent (Claude Code, Codex) je brz programer bez pamćenja između sesija. Kvalitet rezultata zavisi od <b>sistema oko njega</b>: kratka memorija (CLAUDE.md/AGENTS.md sa pravilima, STATUS.md sa stanjem, historija u gitu), mali koraci sa commitom, i provjere koje mašina radi sama.',
-    'Iz tvojih projekata: <b>pravilo prekršeno dva puta postaje test ili hook</b> (sw:stamp, test bijele liste); <b>crveni testovi znače stop</b>, ne „poznata baza“; <b>jedan agent = jedna grana/worktree</b>; <b>redizajn počinje inventarom funkcija</b>; dokumenti imaju jednog vlasnika i jedno mjesto.',
-    'Najveća vrijednost ovog kursa za rad sa agentom: kad znaš pojmove (transakcija, autorizacija, N+1, port, PRG…), zahtjev je precizan, a rezultat provjerljiv. „Popravi“ postaje „umotaj u transakciju i dodaj test koji simulira pad na pola“.',
-  ],
-  analogija:'Agent je izvrstan majstor koji svako jutro dođe bez sjećanja na jučer. Plan na zidu (STATUS), pravila na vratima (CLAUDE.md) i libela koja sama pišti (hookovi, testovi) rade više od dužih uputstava usmeno.',
-  dia:'agent',
-  kod:[
-    {p:'inhome/.claude/hooks/sw-stamp.mjs (PostToolUse hook)', t:'dobar', k:`const rel = path.relative(root, path.resolve(root, filePath)).split(path.sep).join('/');
-if (!rel.startsWith('static/') || rel === 'static/sw.js') process.exit(0);
-const out = execFileSync(process.execPath, [path.join(root, 'scripts', 'sw-cache.mjs')],
-                         { cwd: root, encoding: 'utf8' });`, o:'Pravilo koje je 128 puta ručno pominjano sada izvršava mašina poslije svake izmjene u static/.'},
-    {p:'claude-plugins/CLAUDE.md', t:'dobar', k:`- Hookovi su **Node skripte** (bez npm zavisnosti), jedna skripta = jedan hook.
-  Uz svaku ide \`*.test.js\` (node:test).
-- Hookovi su **fail-open**: greška se upiše u \`~/.claude/pravila.log\` i izađe se sa 0.
-  Jedini izuzetak su blokade tajni.
-- Hookovi moraju biti brzi (< 200 ms za UserPromptSubmit/PreToolUse)`, o:'Kratka, konkretna pravila sa razlogom: jedna odgovornost po skripti, testovi uz svaku, svjesna odluka fail-open vs fail-fast (tajne). Principi iz modula 6 i 7 primijenjeni na alate za agente.'},
-  ],
-  greske:['Dugi CLAUDE.md sa dnevnikom umjesto pravila.','„Popravi“ bez simptoma, sloja i definicije gotovog.','Dva agenta na istim fajlovima bez grana.','Prihvatiti rezultat bez čitanja diffa i bez zelenih provjera.'],
-  kviz:[
-    {p:'Pravilo „podigni CACHE“ je prekršeno više puta. Šta je najbolji potez?', o:['Napisati ga velikim slovima u CLAUDE.md','Pretvoriti ga u skriptu/test/hook koji mašina provjerava','Podsjećati agenta svaki put','Ignorisati'], t:1, e:'Ono što mašina provjerava radi uvijek; ono što agent mora zapamtiti radi ponekad.'},
-    {p:'Gdje ide „šta je urađeno danas“?', o:['CLAUDE.md','Git commit poruke (i kratko u STATUS ako mijenja stanje)','README','Nigdje'], t:1, e:'Pravila, stanje i historija imaju svako svoje mjesto.'},
-    {p:'Koji zahtjev agentu je najbolji?', o:['Popravi bug','Zašto ne radi?','Brisanje fakture vraća 500 (Network: DELETE /api/fakture/15). Nađi uzrok, dodaj test koji ga reproducira, popravi, pokreni test:fast.','Napravi da radi'], t:2, e:'Simptom, lokacija, dokaz i definicija gotovog.'},
-  ],
-  vjezba:{ z:'Napiši zahtjev agentu za ovu promjenu, koristeći pojmove iz kursa: „Kad dva puta brzo kliknem Kreiraj fakturu, nastanu dvije.“', h:'Koji princip (modul 6)? Gdje popraviti: frontend, backend ili oba? Kakav test dokazuje popravku?',
-    r:`Bug: dvostruki klik na „Kreiraj fakturu“ pravi dvije fakture (nije idempotentno).
-
-Cilj:
-1. Frontend: dugme onemogućeno dok zahtjev traje (state.savingId).
-2. Backend (prava zaštita): POST /api/fakture prima idempotency ključ
-   (UUID iz frontenda); isti ključ u 10 min vraća postojeću fakturu, ne pravi novu.
-   Jedinstveni indeks na (user_id, idempotency_key).
-3. Testovi: pytest — dva POST-a sa istim ključem = jedna faktura;
-   Playwright — dvostruki klik = jedna faktura u listi.
-
-Granice: bez promjene obračuna i Lite/Pro pravila.
-Gotovo kad: test:fast i novi testovi zeleni, commit po koraku.`, obj:'Precizan zahtjev imenuje problem (idempotentnost), razdvaja udobnost (frontend) od zaštite (backend + indeks u bazi) i definiše dokaz.'},
-  agent:['Pročitaj STATUS.md i zadnjih 10 commitova, pa mi u 5 redova reci gdje smo stali i predloži sljedeći mali korak sa definicijom gotovog.'],
-},
 ];
 
 /* ================= RJEČNIK ================= */
@@ -765,7 +725,7 @@ const RJECNIK = [
 ['GROUP BY','SQL grupisanje redova radi sabiranja, brojanja i slično.','m3'],
 ['HAVING','SQL filter nad grupama, poslije GROUP BY.','m3'],
 ['Header (zaglavlje)','Metapodatak HTTP zahtjeva ili odgovora, npr. Content-Type, Cookie.','m1'],
-['Hook','Skripta koju alat automatski pokrene na događaj (npr. poslije izmjene fajla).','m11'],
+['Hook','Skripta koju alat automatski pokrene na događaj (npr. poslije izmjene fajla).','lek:ag4'],
 ['HTTP','Protokol zahtjeva i odgovora između klijenta i servera.','m1'],
 ['HttpOnly kolačić','Kolačić koji JavaScript ne može pročitati; štiti token od XSS krađe.','m1'],
 ['Idempotentnost','Ponovljena ista operacija ima isti efekat kao jedna.','m6'],
@@ -811,9 +771,26 @@ const RJECNIK = [
 ['Unit test','Brz test jedne funkcije bez baze i mreže.','m7'],
 ['WAI-ARIA','Standard atributa (role, aria-*) koji čitaču ekrana objašnjava interaktivne elemente.','m10'],
 ['Worker','Jedan proces servera; više workera ne dijeli memoriju.','m9'],
-['Worktree','Drugi radni folder iste git repozitorije na drugoj grani.','m11'],
+['Worktree','Drugi radni folder iste git repozitorije na drugoj grani.','lek:ag6'],
 ['XSS','Napad gdje korisnički tekst postane skripta u tuđem pregledniku.','m8'],
 ['YAGNI','You Aren’t Gonna Need It: ne gradi unaprijed ono što možda zatreba.','m6'],
+['AGENTS.md / CLAUDE.md','Kratka pravila projekta koja agent pročita na početku svake sesije.','lek:ag3'],
+['Commit','Snimljen, imenovan korak u historiji projekta (git).','lek:ag6'],
+['Definicija gotovog','Provjerljiv uslov kad je zadatak završen, npr. „test:fast i novi test zeleni“.','lek:ag2'],
+['Diff','Prikaz šta je izmijenjeno: + dodane linije, - obrisane.','lek:ag5'],
+['Grana (branch)','Odvojena linija rada u gitu; izmjene ne diraju main dok se ne spoje.','lek:ag6'],
+['Kontekst (context window)','Sve što agent u jednom trenutku „vidi“: tvoje poruke, pročitane fajlove, izlaze komandi. Ograničen je i ne pamti se između sesija.','lek:ag1'],
+['MCP','Model Context Protocol: standard kojim se agentu dodaju novi alati (Drive, baza, preglednik).','lek:ag9'],
+['Plan mode','Režim u kojem agent samo čita i pravi plan, bez izmjena, dok ga ne odobriš.','lek:ag8'],
+['PR (pull request)','Zahtjev da se grana spoji u main, uz pregled diffa i provjere.','lek:ag6'],
+['Skill / slash komanda','Sačuvano uputstvo za ponovljiv posao, pokreće se sa /ime (npr. /kraj-sesije).','lek:ag7'],
+['STATUS.md','Kratko stanje projekta: šta radi, šta je sljedeće, blokeri. Najviše ~30 linija.','lek:ag3'],
+['Subagent','Pomoćni agent sa svojim kontekstom i alatima (npr. tester na jeftinijem modelu); vraća kratak izvještaj.','lek:ag7'],
+['/loop','Komanda Claude Code koja ponavlja prompt u zadanom razmaku dok je sesija otvorena.','lek:ag8'],
+['Rutina (Claude Code)','Zakazani zadatak koji radi u cloudu, i kad je tvoj računar ugašen.','lek:ag8'],
+['Prompt injection','Podmetnuto uputstvo u tekstu koji agent čita (issue, mejl, stranica), sa ciljem da ga preusmjeri.','lek:ag9'],
+['Halucinacija','Samouvjeren, a netačan odgovor modela: izmišljen broj, citat ili izvor.','lek:ag10'],
+['Projekat (Claude)','Radni prostor u claude.ai sa svojim fajlovima, uputstvima i razgovorima.','lek:ag10'],
 ];
 
 

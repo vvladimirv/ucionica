@@ -5,16 +5,17 @@ import vm from 'node:vm';
 import { SRC, moduli } from '../build.mjs';
 
 export const moduliLekcija = () => moduli().filter(m => /^\d\d-lekcije-/.test(m));
-export const DIJELOVI_IDS = [['py', 'LEKCIJE_PY'], ['js', 'LEKCIJE_JS'], ['sql', 'LEKCIJE_SQL']];
+export const DIJELOVI_IDS = [['py', 'LEKCIJE_PY'], ['js', 'LEKCIJE_JS'], ['sql', 'LEKCIJE_SQL'], ['ag', 'LEKCIJE_AG']];
 
 export function ucitajLekcije() {
   const ctx = vm.createContext({});
-  for (const m of [...moduliLekcija(), '40-teme.js']) vm.runInContext(readFileSync(join(SRC, 'js', m), 'utf8'), ctx, { filename: m });
+  for (const m of [...moduliLekcija(), ...moduli().filter(m => /^4\d-teme/.test(m))]) vm.runInContext(readFileSync(join(SRC, 'js', m), 'utf8'), ctx, { filename: m });
   const uzmi = ime => vm.runInContext(`typeof ${ime} !== 'undefined' ? ${ime} : undefined`, ctx);
   return {
     dijelovi: DIJELOVI_IDS.map(([id, ime]) => ({ id, ime, lekcije: uzmi(ime) || [] })),
     teme: uzmi('TEME') || [],
     rjecnik: uzmi('RJECNIK') || [],
+    dia: uzmi('DIA') || {},
   };
 }
 

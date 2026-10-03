@@ -12,6 +12,7 @@ const tagTxt = { dobar: '✓ dobar primjer', los: '⚠ problematično', mjes: '�
 
 function renderTemaView() {
   const m = TEME.find(t => t.id === cur.id); const i = TEME.indexOf(m); const p = P.data.teme[m.id] || {};
+  const dio5 = DIJELOVI.find(d => d.poslijeTema && d.lekcije.length);
   $('#main').innerHTML = `
   <div class="lhead"><div class="eyebrow">Dio 4 · Tema ${m.n} od ${TEME.length - 1}</div><h2>${esc(m.naslov)}</h2><p class="muted">${esc(m.pod)}</p>
   <div class="note warn small">Ova tema još nije pretvorena u interaktivne korake. Najbolje je prvo proći dijelove 1–3 (Python, JavaScript, SQL); za sve nejasno pitaj tutora.</div></div>
@@ -22,16 +23,18 @@ function renderTemaView() {
   <section class="card" data-kviz="${m.id}"><div class="sec-t">Kviz</div>${m.kviz.map((q, qi) => `<div class="q" data-q="${qi}"><div class="q-p">${qi + 1}. ${esc(q.p)}</div><div class="opts">${q.o.map((o, oi) => `<button data-topt="${oi}">${esc(o)}</button>`).join('')}</div><div class="q-obj" hidden></div></div>`).join('')}<div class="score" data-score>${p.kviz ? 'Zadnji rezultat: ' + p.kviz : ''}</div></section>
   <section class="card"><div class="sec-t">Vježba</div><p style="white-space:pre-wrap">${esc(m.vjezba.z)}</p><details class="ex"><summary>Nagovještaj</summary><div><p>${esc(m.vjezba.h)}</p></div></details><details class="ex"><summary>Rješenje</summary><div><pre>${esc(m.vjezba.r)}</pre><p class="small">${esc(m.vjezba.obj)}</p></div></details></section>
   <section class="card"><div class="sec-t">Kako ovo reći agentu</div>${m.agent.map(a => `<div class="prompt">${esc(a)}</div>`).join('')}</section>
-  <div class="navbtns">${i > 0 ? `<button class="btn" data-go="tema:${TEME[i - 1].id}">← ${esc(TEME[i - 1].naslov)}</button>` : '<span></span>'}<button class="btn" data-tdone="${m.id}">${p.done ? '✓ Pročitano (poništi)' : 'Označi kao pročitano'}</button>${i < TEME.length - 1 ? `<button class="btn primary" data-go="tema:${TEME[i + 1].id}">${esc(TEME[i + 1].naslov)} →</button>` : '<button class="btn primary" data-go="rjecnik">Rječnik →</button>'}</div>`;
+  <div class="navbtns">${i > 0 ? `<button class="btn" data-go="tema:${TEME[i - 1].id}">← ${esc(TEME[i - 1].naslov)}</button>` : '<span></span>'}<button class="btn" data-tdone="${m.id}">${p.done ? '✓ Pročitano (poništi)' : 'Označi kao pročitano'}</button>${i < TEME.length - 1 ? `<button class="btn primary" data-go="tema:${TEME[i + 1].id}">${esc(TEME[i + 1].naslov)} →</button>` : dio5 ? `<button class="btn primary" data-go="lek:${dio5.lekcije[0].id}:0">${esc(dio5.naslov)} →</button>` : '<button class="btn primary" data-go="rjecnik">Rječnik →</button>'}</div>`;
   if (m.dia === 'put') renderPut();
 }
 
+// Pojam vodi na temu (m4) ili na lekciju (lek:ag4).
+const rjecnikLink = m => m.startsWith('lek:') ? `<button data-go="${m}:0">→ lekcija: ${esc(findLek(m.slice(4))?.naslov || m)}</button>` : `<button data-go="tema:${m}">→ tema ${esc(m.slice(1))}</button>`;
 function renderRjecnikView(q = '') {
   const f = q.trim().toLowerCase();
   const rows = RJECNIK.filter(([t, d]) => !f || (t + ' ' + d).toLowerCase().includes(f)).sort((a, b) => a[0].localeCompare(b[0], 'bs'));
   $('#main').innerHTML = `<div class="lhead"><div class="eyebrow">Rječnik</div><h2>Pojmovi od A do Ž</h2><p class="muted">${RJECNIK.length} pojmova.</p></div>
     <input class="gl-search" id="glq" type="search" placeholder="Traži pojam…" value="${esc(q)}" aria-label="Pretraga rječnika">
-    <div class="gl">${rows.map(([t, d, m]) => `<div class="card"><b>${esc(t)}</b><span class="small">${esc(d)}</span>${m ? `<button data-go="tema:${m}">→ tema ${esc(m.slice(1))}</button>` : ''}</div>`).join('') || '<p class="muted">Nema rezultata.</p>'}</div>`;
+    <div class="gl">${rows.map(([t, d, m]) => `<div class="card"><b>${esc(t)}</b><span class="small">${esc(d)}</span>${m ? rjecnikLink(m) : ''}</div>`).join('') || '<p class="muted">Nema rezultata.</p>'}</div>`;
 }
 
 function temaKviz(to) {

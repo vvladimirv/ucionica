@@ -18,6 +18,7 @@ $('#tIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKe
 $('#tStop').onclick = () => tCtl?.abort();
 $('#tClose').onclick = closeTutor;
 $('#tOpen').onclick = openTutor;
+$('#tDrugi').onclick = () => { const v = $('#tIn').value; $('#tIn').value = ''; if (v.trim()) tMsg('user', v); drugiAi(v); };
 
 P.load();
 renderStatus();
@@ -25,8 +26,7 @@ go((location.hash || '').slice(1).replace(/-/g, ':') || P.data.zadnje || '', fal
 P.cloud();
 loadSql();
 claudeUse('sample').then(s => {
-  sample = s; ENV.tutor = s ? 'ok' : 'bad'; renderStatus();
-  $('#tOpen').hidden = !s; renderTutorQuick();
-  document.querySelectorAll('[data-tutor-explain]').forEach(b => { b.hidden = !s; });
+  // bez Claude-a tutor i dalje radi: pripremi pitanje za besplatni AI (drugiAi u 52-tutor.js)
+  sample = s; ENV.tutor = s ? 'claude' : 'drugi'; renderStatus();
 });
 
