@@ -205,6 +205,8 @@ details.ex > div{padding:0 12px 12px;display:grid;gap:8px}
 .q:first-of-type{border-top:none}
 .q-p{font-weight:600} .q-obj{font-size:.9rem;color:var(--muted)} .score{font-family:var(--mono);font-size:.85rem}
 .dia{overflow-x:auto}
+.tblw{overflow-x:auto;max-width:100%}
+.tblw code{white-space:nowrap}
 .flow{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
 .box{flex:1 1 150px;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--surface2);display:grid;gap:4px;align-content:start;min-width:0}
 .box b{font-family:var(--display);font-size:.95rem}
