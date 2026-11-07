@@ -10,7 +10,7 @@ pravom mini-stranicom, SQL preko sql.js. Primjeri su iz stvarnih projekata (inho
 | 1 · Python od nule | 9 lekcija: print, varijable, if, liste, rječnici, funkcije, greške, klase, čitanje Flask rute | gotovo |
 | 2 · JavaScript | 8 lekcija: konzola, if/===, nizovi, objekti i JSON, funkcije, DOM, događaji, fetch/async | gotovo |
 | 3 · SQL i baze | 5 lekcija: SELECT, GROUP BY, JOIN, izmjene i pravila, transakcije/parametri/indeksi | gotovo |
-| 4 · Teme | 11 tema (web, baze, arhitektura, testiranje, sigurnost…) + rječnik | čitanje i kviz |
+| 4 · Teme | 12 tema (web, baze, arhitektura, testiranje, sigurnost, Claude Code i Codex u praksi…) + rječnik | čitanje i kviz |
 | 5 · Rad sa AI agentima | 10 lekcija: kako agent radi, dobar zahtjev, CLAUDE.md/STATUS, hookovi, provjera rada, git i paralelni rad, Claude Code u praksi (sesije, plan mode, /loop), subagenti i MCP, Claude za posao (dokumenti, podaci, automatizacija), alati i završni zadatak | gotovo |
 
 Svaka lekcija je niz koraka: objašnjenje, primjer sa klikabilnim linijama, „predvidi rezultat“,

@@ -1,6 +1,6 @@
 # Status
 
-Ažurirano: 2026-10-03.
+Ažurirano: 2026-11-07.
 
 ## Gdje smo
 
@@ -9,16 +9,28 @@ Ažurirano: 2026-10-03.
 | 1 · Python od nule | 9 lekcija, 99 koraka — gotovo |
 | 2 · JavaScript | 8 lekcija, 104 koraka — gotovo |
 | 3 · SQL i baze | 5 lekcija, 64 koraka — gotovo |
-| 4 · Teme | 11 tema + rječnik; čitanje i kviz, nisu interaktivni koraci |
+| 4 · Teme | 12 tema + rječnik; čitanje i kviz, nisu interaktivni koraci |
 | 5 · Rad sa AI agentima | 10 lekcija, 100 koraka — gotovo |
 
-- `npm test`: 32 lekcije, 367 koraka, 11 tema, 56 slučajeva runnera, 182 izvršne provjere, UI prolaz i
+- `npm test`: 32 lekcije, 367 koraka, 12 tema, 56 slučajeva runnera, 182 izvršne provjere, UI prolaz i
   telefon (390 px) — sve prolazi.
 - Artefakt: <https://claude.ai/artifact/V4DU7enjHTwhCZ2a1vMEq8>. Objavljuje se samo `dist/index.html`;
   runtime fajlovi (`py/`, `sql/`) se ne mijenjaju. Capabilities `sample`, `db` i `user` su zadržane.
   Zadnja objava: vidi niže, „Objave“.
 
-## Novo u fazi „Dio 5 · Rad sa AI agentima“ (2026-10-03)
+## Novo: Tema 11 (id `m12`) · Claude Code i Codex u praksi (2026-11-07, objavljeno kao verzija 10)
+
+- Priručnik uz Dio 5: chat ili agent, projekti, okruženje, skillovi/pluginsi/hookovi (kreiranje, poziv,
+  doseg, šta učitava cloud nit projekta), tokeni i komande, modeli i effort. Teme imaju novo polje
+  `sekcije` (naslov + HTML). Id je `m12` jer je stari `m11` zamijenjen Dijelom 5.
+- Provjereno u code.claude.com/docs; za Codex iz izvornog koda github.com/openai/codex
+  (developers.openai.com nije bio dostupan iz cloud sesije).
+- Prva verzija je greškom napravljena na staroj grani `claude/eager-hamilton-bilyvq` (bez Dijela 5).
+  **Prava osnova je `ccr-8159b8b3-ddj45s`** (ona odgovara objavljenoj stranici); prije rada provjeri da
+  build zadnje grane odgovara živom artefaktu.
+- U cloud sesiji `npm test` traži `CHROMIUM_PATH=/opt/pw-browsers/chromium`.
+
+## Ranije: faza „Dio 5 · Rad sa AI agentima“ (2026-10-03)
 
 - **Vraćeno u git:** živi artefakt (verzija `1790537289-3496`) je imao Dio 5 sa lekcijama ag1–ag7,
   runner `tekst` i rezervni tutor („Pitaj drugi AI“), a toga nije bilo ni u jednoj grani. Uvezeno sa
@@ -95,3 +107,4 @@ Kod iz inhome i Sole-KP citiraj samo iz samih repozitorija. Postojeći citati su
 | 7 | `1790411547-d968` | 2026-09-26 | `d9ad761` | Dio 3 · SQL |
 | 8 | `1790537289-3496` | ? | — (nije bilo u gitu; vraćeno u `ad9db16`) | Dio 5 · ag1–ag7, rezervni tutor |
 | 9 | `1791047870-4b9c` | 2026-10-03 | `ad9db16` | Dio 5 · ag8–ag10 (Claude Code, MCP, posao) |
+| 10 | `1794034384-5891` | 2026-11-07 | ova grana (`claude/project-thread-9nslst`) | Tema 11 · Claude Code i Codex u praksi |

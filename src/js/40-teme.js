@@ -91,6 +91,9 @@ GROUP BY k.id, k.ime;</pre>`; },
     <div class="box ls"><span class="k">rad</span><b>mali korak</b><span>hook: sw:stamp</span></div><span class="arrow">→</span>
     <div class="box ls"><span class="k">provjera</span><b>test:fast</b><span>Stop hook, crveno = stop</span></div><span class="arrow">→</span>
     <div class="box ld"><span class="k">trag</span><b>commit + STATUS</b><span>historija = git log</span></div></div>`; },
+  doseg(){ const r=[['CLAUDE.md','~/.claude/CLAUDE.md','CLAUDE.md u repou','✓ iz klona'],['Skill','~/.claude/skills/…','.claude/skills/…','✗ · uključi na claude.ai nalogu'],['Hook','~/.claude/settings.json','.claude/settings.json','✗ · samo kad nit radi na tvom računaru'],['Plugin','/plugin · doseg user','/plugin · doseg project','✗ · Project settings › Plugins'],['MCP / konektor','claude mcp add','.mcp.json','✗ · konektori na claude.ai'],['Alati i paketi','instalirani na računaru','—','setup skripta okruženja']];
+    return `<table class="tbl"><tr><th>Dio</th><th>Samo ja, svi projekti (računar)</th><th>Svi u repou (git)</th><th>Nit u claude.ai/code projektu</th></tr>${r.map(([a,b,c,d])=>`<tr><td><b>${a}</b></td><td><code>${b}</code></td><td><code>${c}</code></td><td>${d}</td></tr>`).join('')}</table>
+    <p class="small muted" style="margin-top:8px">Na računaru se sve iz prve dvije kolone učitava samo u svaku novu sesiju. Cloud ne vidi tvoj računar: nit projekta iz repoa čita samo CLAUDE.md, a ostalo dobije sa tvog claude.ai naloga i iz podešavanja projekta.</p>`; },
 };
 
 /* ================= MODULI ================= */
@@ -685,6 +688,169 @@ export function isProUser() {
 <!-- + JS: klik i strelice ←/→ mijenjaju aria-selected, tabindex i hidden -->`, obj:'Button daje fokus i Enter/Space, role i aria govore čitaču ekrana šta je šta, tabindex="-1" drži samo aktivni tab u Tab redoslijedu (strelice vode kroz ostale).'},
   agent:['Chipovi u Postavkama (data-next-postavke-tab) su vizuelno tabovi, ali imaju role="group". Pretvori ih u WAI-ARIA tabs obrazac kao u dosijeu (app-next.js:710), uključujući strelice, i ažuriraj E2E testove.'],
 },
+{ id:'m12', n:'11', naslov:'Claude Code i Codex u praksi', pod:'Chat ili agent, projekti, okruženje, skillovi, pluginsi, hookovi, tokeni, modeli i effort',
+  ideja:[
+    'Dio 5 uči <b>kako</b> raditi sa agentom (zahtjev, CLAUDE.md, hookovi, git, MCP, izbor modela). Ova tema je praktičan priručnik uz njega: <b>koji alat</b> otvoriti, <b>gdje</b> šta podesiti, <b>da li se to učitava samo</b> i <b>kako provjeriti</b> koliko trošiš. Odgovori su provjereni u zvaničnoj dokumentaciji Claude Code (code.claude.com/docs) i u izvornom kodu Codex CLI (github.com/openai/codex) u novembru 2026.',
+    'Ovi alati se mijenjaju svakih nekoliko sedmica. Imena komandi i menija ovdje su tačna u trenutku pisanja; kad nešto ne nađeš, prvo otkucaj <code>/help</code> (ili samo <code>/</code>) u alatu i pogledaj aktuelnu listu, umjesto da vjeruješ starom tekstu, pa ni ovom.',
+    'Jedno pravilo provlači se kroz sve: <b>gdje fajl stoji, tu važi</b>. Fajl u tvom korisničkom folderu (<code>~/.claude/</code>) važi za tebe u svim projektima na tom računaru. Fajl u projektu (<code>.claude/</code> u repou) važi za svakoga ko radi u tom repou. Cloud sesija vidi samo ono što je u gitu ili podešeno na tvom claude.ai nalogu.',
+  ],
+  analogija:'Chat je telefonski razgovor sa stručnjakom: objasni, savjetuj, napiši tekst. Claude Code i Codex su majstor kojem daš ključeve radionice (folder sa kodom): sam otvara fajlove, mjeri, reže i provjerava. Okruženje je sama radionica (koji alati stoje na zidu, ima li struje i interneta). Pluginsi su kutije sa alatom koje doneseš, a hookovi su senzori koji sami pište kad neko uradi nešto određeno.',
+  sekcije:[
+    {n:'1 · Kada Claude Code (ili Codex), a kada običan chat?', t:[
+      'Pitanje koje odlučuje: <b>treba li da se nešto uradi u fajlovima ili na računaru?</b> Ako da, to je posao za agenta. Ako je odgovor tekst koji ti čitaš, chat je dovoljan i jeftiniji.',
+      '<div class="tblw"><table class="tbl"><tr><th>Zadatak</th><th>Alat</th><th>Zašto</th></tr>'
+      + '<tr><td>„Šta je transakcija?“, „Objasni mi ovu grešku“</td><td>chat</td><td>samo objašnjenje, nema fajlova</td></tr>'
+      + '<tr><td>Tekst ponude klijentu, mail, plan sedmice</td><td>chat</td><td>rezultat je tekst</td></tr>'
+      + '<tr><td>Razmišljanje „kako bih organizovao fakture“ prije koda</td><td>chat (ili Plan mode u agentu)</td><td>odluka prije izmjene</td></tr>'
+      + '<tr><td>„Dodaj polje telefon klijentu i test“</td><td>Claude Code / Codex</td><td>mijenja više fajlova, pokreće testove</td></tr>'
+      + '<tr><td>„Brisanje fakture vraća 500, nađi uzrok“</td><td>Claude Code / Codex</td><td>mora čitati kod, logove, pokrenuti aplikaciju</td></tr>'
+      + '<tr><td>Commit, push, pull request</td><td>Claude Code / Codex</td><td>radi sa gitom i GitHubom</td></tr></table></div>',
+      'Česta zamka: kopiranje koda iz chata u fajlove ručno. Tada chat ne vidi ostatak projekta, ne pokreće testove i ne zna da li je izmjena uopšte radila. Čim kopiraš više od par linija, pređi u agenta.',
+      'Claude Code i Codex rade isti posao (agent u folderu sa kodom). Razlika je model (Claude ili OpenAI), nazivi fajlova (<code>CLAUDE.md</code> / <code>AGENTS.md</code>) i neke komande. Claude Code može pročitati i postojeći <code>AGENTS.md</code> umjesto <code>CLAUDE.md</code>, pa jedan repo može služiti oba alata.',
+    ]},
+    {n:'2 · Zašto kreirati projekat?', t:[
+      'Riječ „projekat“ znači tri različite stvari, zavisno gdje si:',
+      '<div class="tblw"><table class="tbl"><tr><th>Gdje</th><th>Šta je projekat</th><th>Šta dobiješ</th></tr>'
+      + '<tr><td>claude.ai chat</td><td>radni prostor sa svojim chatovima, fajlovima (project knowledge) i uputstvima</td><td>ne ponavljaš u svakom chatu „ja pravim namještaj po mjeri, piši na bosanskom“; uploadovani dokumenti su uvijek pri ruci</td></tr>'
+      + '<tr><td>Claude Code na računaru</td><td>folder (najčešće git repo) u kojem pokreneš <code>claude</code></td><td><code>CLAUDE.md</code>, <code>.claude/settings.json</code>, skillovi i hookovi iz tog foldera važe samo tu</td></tr>'
+      + '<tr><td>Projects u claude.ai/code (beta)</td><td>jedan dugi razgovor sa koordinatorom koji pokreće niti (threads) za svaki zadatak</td><td>repozitoriji, uputstva, memorija projekta i okruženje podese se jednom; svaka nit počinje od njih</td></tr></table></div>',
+      'Projekat se isplati kad posao ima cilj duži od jedne sesije i stalno donosi nove zadatke (kao ova učionica). Za jedan mali zadatak („popravi ovaj test“) dovoljna je obična sesija.',
+      'U Projects (claude.ai/code) postoje dvije vrste trajnog znanja: <b>memorija projekta</b> (bilješke koje Claude sam vodi, indeks <code>MEMORY.md</code>) i <b>uputstva projekta</b> (tekst koji svaka nova nit dobije, do 16.000 znakova). Pravila o samom kodu i dalje idu u <code>CLAUDE.md</code> u repou, jer ga svaka nit pročita iz klona.',
+    ]},
+    {n:'3 · Šta je environment (okruženje)?', t:[
+      '„Okruženje“ se koristi u tri značenja. Sva tri su ista ideja: <b>sve oko programa što nije sam kod</b>.',
+      '<b>a) Mašina na kojoj agent radi.</b> Lokalno: tvoj računar (tvoji fajlovi, tvoj Python, tvoj login na GitHub). Cloud: svježa virtuelna mašina (Ubuntu) sa kloniranim repoom, koja nestane kad sesija završi. Ono što je samo na tvom računaru, cloud ne vidi.',
+      '<b>b) Cloud environment (podešavanje za cloud sesije).</b> Određuje: <b>pristup mreži</b> (None = ništa, Trusted = poznati registri paketa, GitHub i slično, Full = sve, Custom = tvoja lista domena), <b>varijable okruženja</b>, <b>tajne za mrežu</b> (ključ koji proxy doda zahtjevu, a sesija ga ne vidi) i <b>setup skriptu</b> (Bash skripta koja instalira alate prije nego Claude počne). U Projects se bira u <b>Project settings › Environment</b>. Primjer: ako agent ne može otvoriti neku stranicu zbog mreže, to se rješava ovdje, a ne u kodu.',
+      '<b>c) Varijable okruženja (env varijable).</b> Imenovane vrijednosti koje proces dobije izvana, npr. <code>DATABASE_URL</code> ili <code>ANTHROPIC_MODEL</code> (vidi temu 9). Tajne (lozinke, API ključevi) idu u env varijable ili tajne okruženja, nikad u kod ni u <code>CLAUDE.md</code>; varijable cloud okruženja može pročitati svako ko koristi to okruženje.',
+    ]},
+    {n:'4 · Skillovi, pluginsi, hookovi, MCP: šta je šta', t:[
+      '<div class="tblw"><table class="tbl"><tr><th>Dio</th><th>Šta je</th><th>Ko ga pokreće</th><th>Kad koristiti</th></tr>'
+      + '<tr><td><b>CLAUDE.md</b></td><td>pravila koja se učitaju na početku svake sesije</td><td>samo se učita</td><td>kratka pravila koja uvijek važe (ispod 200 linija)</td></tr>'
+      + '<tr><td><b>Skill</b></td><td>folder sa <code>SKILL.md</code> uputstvom (i pomoćnim fajlovima)</td><td>ti sa <code>/ime</code>, ili Claude sam kad opis odgovara zadatku</td><td>postupak u više koraka koji ponavljaš (npr. „kraj sesije“)</td></tr>'
+      + '<tr><td><b>Hook</b></td><td>komanda (skripta) vezana za događaj</td><td>Claude Code automatski, na događaj; ti ga ne pozivaš</td><td>pravilo koje mora važiti uvijek, bez oslanjanja na pamćenje modela</td></tr>'
+      + '<tr><td><b>MCP server / konektor</b></td><td>most prema drugom servisu (GitHub, Gmail, baza)</td><td>Claude, kao alat</td><td>kad agent treba čitati ili pisati u drugi sistem</td></tr>'
+      + '<tr><td><b>Subagent</b></td><td>pomoćnik sa svojim kontekstom koji vrati sažetak</td><td>Claude ga pozove</td><td>pretraga ili posao sa puno izlaza</td></tr>'
+      + '<tr><td><b>Plugin</b></td><td>paket koji spoji više gornjih dijelova u jedan</td><td>instaliraš jednom, pa radi</td><td>kad isti set alata hoćeš u više projekata ili ga daješ drugima</td></tr></table></div>',
+      'Komande koje sam praviš su danas skillovi: <code>.claude/commands/deploy.md</code> i <code>.claude/skills/deploy/SKILL.md</code> oba prave <code>/deploy</code>.',
+      'Važna razlika: <b>CLAUDE.md i skill su savjet</b> (model ih čita i obično poštuje), <b>hook je pravilo</b> (mašina ga izvrši svaki put). Zato Dio 5 (lekcija o hookovima) kaže: pravilo prekršeno dva puta postaje hook ili test.',
+      'Svaki uključen plugin i skill ima cijenu: ime i opis svakog skilla su u kontekstu u svakoj poruci, a puni tekst se učita tek kad se skill koristi. Ne drži uključene pluginse koje ne koristiš.',
+    ]},
+    {n:'5 · Kako se kreiraju i pozivaju', t:[
+      '<b>Skill (najlakše).</b> Napravi folder i fajl <code>~/.claude/skills/ime-skilla/SKILL.md</code> (za sebe, svi projekti) ili <code>.claude/skills/ime-skilla/SKILL.md</code> u repou (za taj projekat, commituj ga). Na vrhu fajla, između <code>---</code> linija, stavi <code>name</code> i <code>description</code>. Opis je najvažniji: po njemu Claude odlučuje kad da ga sam upotrijebi. Ako želiš da ga pokrećeš samo ti, dodaj <code>disable-model-invocation: true</code>. Poziv: <code>/ime-skilla</code>. Popis svih: <code>/skills</code>.',
+      '<b>Hook.</b> Upiše se u blok <code>"hooks"</code> u settings fajlu (primjer ispod, u „Kod“). Najčešći događaji: <code>SessionStart</code> (početak sesije), <code>UserPromptSubmit</code> (poslao si poruku), <code>PreToolUse</code> (prije alata, može ga blokirati), <code>PostToolUse</code> (poslije alata, npr. poslije izmjene fajla), <code>Stop</code> (Claude je završio odgovor), <code>Notification</code> (Claude čeka tebe). <code>matcher</code> sužava na alat, npr. <code>"Edit|Write"</code>. Skripta koja izađe sa kodom <b>2</b> blokira radnju i javi razlog; kod 0 znači „nemam primjedbu“. Provjera: <code>/hooks</code> pokaže sve hookove po događajima. Najlakše je reći Claudeu: „napravi hook koji poslije svake izmjene u src/ pokrene npm test“ i pregledati šta je napisao.',
+      '<b>Plugin.</b> Folder sa <code>.claude-plugin/plugin.json</code> (ime, opis, verzija) i dijelovima pored njega: <code>skills/</code>, <code>agents/</code>, <code>hooks/hooks.json</code>, <code>.mcp.json</code>. U terminalu: <code>claude plugin init moj-alat</code> napravi početni plugin, <code>claude plugin validate ./moj-alat</code> ga provjeri, a <code>claude --plugin-dir ./moj-alat</code> ga učita samo za tu sesiju radi probe. Skill iz plugina se poziva sa prefiksom: <code>/moj-alat:ime-skilla</code>.',
+      '<b>Instalacija tuđeg plugina.</b> U sesiji: <code>/plugin</code> (kartica Discover) ili <code>/plugin install ime@marketplace</code>. Iz terminala: <code>claude plugin install ime@marketplace</code>. Marketplace (katalog pluginsa) dodaš jednom: <code>/plugin marketplace add vlasnik/repo</code>. Plugin pokreće kod sa tvojim pravima, zato prije instalacije pročitaj šta dodaje.',
+    ]},
+    {n:'6 · Moram li ih učitavati u svaki chat ili projekat?', t:[
+      '<b>Na svom računaru: ne.</b> Jednom instaliran ili zapisan, dio se učitava sam u svaku novu sesiju u svom dosegu (scope). Doseg biraš pri instalaciji:',
+      '<div class="tblw"><table class="tbl"><tr><th>Doseg</th><th>Fajl</th><th>Važi za</th></tr>'
+      + '<tr><td>user</td><td><code>~/.claude/settings.json</code>, <code>~/.claude/skills/</code></td><td>tebe, u svim projektima na ovom računaru</td></tr>'
+      + '<tr><td>project</td><td><code>.claude/settings.json</code>, <code>.claude/skills/</code> (u gitu)</td><td>svakoga ko radi u tom repou</td></tr>'
+      + '<tr><td>local</td><td><code>.claude/settings.local.json</code> (van gita)</td><td>tebe, samo u tom repou</td></tr></table></div>',
+      'Kad se isto podešavanje nađe na više mjesta, jače je uže: local pobjeđuje project, project pobjeđuje user (a pravila organizacije pobjeđuju sve). Liste dozvola se spajaju. Promjene u settings fajlu Claude Code većinom primijeni odmah; poslije instalacije plugina, ako traži, pokreni <code>/reload-plugins</code>.',
+      '<b>U cloudu (claude.ai/code, Projects): drugačije.</b> Cloud mašina nema tvoj <code>~/.claude/</code>. U nitima projekta (kao ova učionica) iz repoa se učitava samo <code>CLAUDE.md</code> (i <code>.claude/rules/</code>), a <b>ne</b> skillovi iz <code>.claude/skills/</code>, hookovi i dozvole iz <code>.claude/settings.json</code> ni <code>.mcp.json</code>. Umjesto toga: skillove uključi na svom claude.ai nalogu, pluginse dodaj u <b>Project settings › Plugins</b>, a konektore (MCP) poveži jednom na claude.ai; tada ih ima svaka nova nit bez ponovnog učitavanja. Alate i pakete instalira setup skripta okruženja. Hookovi iz repoa rade samo kad nit radi na tvom računaru.',
+      'U običnoj cloud sesiji sa jednim repoom (van Projects) čita se i <code>.claude/settings.json</code> iz repoa (hookovi, dozvole), ali pluginsi koje repo uključuje se ni tu ne instaliraju.',
+    ]},
+    {n:'7 · Tokeni i potrošnja: komande u chatu i na računaru', t:[
+      '<b>Token</b> je komadić teksta (otprilike dio riječi) koji model čita ili piše. <b>Kontekst</b> je sve što model u tom trenutku „vidi“: pravila, razgovor, pročitani fajlovi. Svaka nova poruka ponovo šalje cijeli razgovor, zato duga sesija troši više i za kratko pitanje.',
+      '<div class="tblw"><table class="tbl"><tr><th>Gdje kucaš</th><th>Komanda</th><th>Šta pokaže</th></tr>'
+      + '<tr><td>u Claude Code sesiji</td><td><code>/usage</code> (isto: <code>/cost</code>, <code>/stats</code>)</td><td>tokene sesije; na pretplati (Pro, Max) trake limita plana, raspodjelu šta najviše troši i preporuke (taster f primijeni dio njih)</td></tr>'
+      + '<tr><td>u Claude Code sesiji</td><td><code>/context</code></td><td>koliko je konteksta popunjeno i čime (pravila, alati, MCP, razgovor)</td></tr>'
+      + '<tr><td>u Claude Code sesiji</td><td><code>/status</code></td><td>verziju, model, nalog i koji settings fajlovi su učitani</td></tr>'
+      + '<tr><td>u Claude Code sesiji</td><td><code>/compact</code>, <code>/clear</code></td><td>sažmi razgovor / počni čist razgovor (najjeftinije kad mijenjaš temu)</td></tr>'
+      + '<tr><td>u Claude Code sesiji</td><td><code>/insights</code></td><td>HTML izvještaj o tome kako radiš i gdje zapinje (samo lokalno)</td></tr>'
+      + '<tr><td>terminal na računaru</td><td><code>claude --version</code></td><td>verziju (stari alat često objašnjava „čudno“ ponašanje)</td></tr>'
+      + '<tr><td>terminal na računaru</td><td><code>claude doctor</code></td><td>greške u instalaciji i podešavanjima</td></tr>'
+      + '<tr><td>terminal na računaru</td><td><code>claude plugin list</code>, <code>claude plugin details ime</code></td><td>instalirane pluginse; koliko tokena plugin dodaje svakoj sesiji</td></tr>'
+      + '<tr><td>preglednik</td><td>claude.ai › Settings › Usage</td><td>potrošnju plana i dodatne kredite (usage credits)</td></tr>'
+      + '<tr><td>claude.ai/code Projects</td><td>Project settings › Usage</td><td>tokene po niti i po modelu</td></tr>'
+      + '<tr><td>u Codex sesiji</td><td><code>/status</code></td><td>podešavanje sesije i potrošnju tokena</td></tr>'
+      + '<tr><td>u Codex sesiji</td><td><code>/usage</code></td><td>potrošnju naloga i limite</td></tr></table></div>',
+      'Pazi: raspodjela u <code>/usage</code> (šta najviše troši) računa se iz historije sesija na <b>tom</b> računaru, pa u nju ne ulaze drugi uređaji ni chat na claude.ai. Na pretplati iznos u dolarima u sesiji nije račun, nego procjena po cjenovniku.',
+      'Najveće uštede, po dokumentaciji: <code>/clear</code> između nepovezanih zadataka, precizan zahtjev („dodaj validaciju u funkciju X u fajlu Y“, ne „poboljšaj kod“), kratak <code>CLAUDE.md</code> (postupke prebaci u skillove), isključeni MCP serveri i pluginsi koje ne koristiš, i model/effort po zadatku.',
+    ]},
+    {n:'8 · Kako birati model i effort', t:[
+      '<b>Model</b> je „koji mozak“. <b>Effort</b> (napor) je koliko taj mozak razmišlja prije odgovora: viši effort = bolje za teške probleme, ali sporije i više tokena.',
+      '<b>Claude Code.</b> <code>/model</code> otvori izbor (strelice lijevo/desno mijenjaju effort); <code>/model sonnet</code> prebaci odmah i zapamti kao zadani. Pri pokretanju: <code>claude --model opus</code>. Nadimci: <code>opus</code> (najjači za složeno razmišljanje), <code>sonnet</code> (svakodnevno programiranje), <code>haiku</code> (brz i jeftin za jednostavno), <code>opusplan</code> (Opus dok planira, Sonnet dok izvršava). Effort: <code>/effort</code> ili <code>/effort high</code>; nivoi su <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code>, <code>max</code>, a <code>/effort auto</code> vrati zadano. Zadani effort za Opus 5.5, Sonnet 5.5 i Haiku 5.5 je <code>medium</code>.',
+      '<b>Projects (claude.ai/code).</b> U <b>Project settings › General</b> posebno se biraju model i effort za niti i za koordinatora. Nov projekat koristi Opus, effort high za niti i low za koordinatora. Za jedan zadatak drugi model možeš tražiti u samoj poruci.',
+      '<b>Codex.</b> <code>/model</code> bira model i reasoning effort zajedno. Trajno se podešava u <code>~/.codex/config.toml</code> ključevima <code>model</code> i <code>model_reasoning_effort</code>. Koji nivoi postoje zavisi od modela; meni u <code>/model</code> pokaže samo dozvoljene.',
+      '<div class="tblw"><table class="tbl"><tr><th>Zadatak</th><th>Prijedlog</th></tr>'
+      + '<tr><td>Preimenuj, ispravi tekst, mala izmjena koju znaš tačno opisati</td><td>Sonnet ili Haiku, effort low</td></tr>'
+      + '<tr><td>Nova funkcija u poznatom dijelu koda, testovi</td><td>Sonnet, medium</td></tr>'
+      + '<tr><td>Bug kojem ne znaš uzrok, više slojeva (frontend, ruta, baza)</td><td>Opus, high</td></tr>'
+      + '<tr><td>Arhitektura, plan velike izmjene, sigurnost, novac</td><td>Opus, high ili xhigh (Plan mode prvo)</td></tr>'
+      + '<tr><td>Isti zadatak se ne rješava ni na high</td><td>max, ali kratko: troši najviše</td></tr></table></div>',
+      'Tabela je preporuka (procjena), ne pravilo iz dokumentacije. Iz dokumentacije je samo ovo: Sonnet dobro radi većinu programerskih zadataka i jeftiniji je od Opusa, a Opus je za složene arhitektonske odluke i razmišljanje u više koraka. Prvo pokušaj nižim, pa podigni ako rezultat nije dobar; obrnuto (uvijek max) brzo potroši limit.',
+    ]},
+  ],
+  dia:'doseg',
+  kod:[
+    {p:'Primjer iz dokumentacije Claude Code (hooks-guide): hook u ~/.claude/settings.json', t:'dobar', k:`{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write" }]
+      }
+    ]
+  }
+}`, o:'Poslije svakog Edit ili Write alata Claude Code sam pokrene formatiranje izmijenjenog fajla. Niko ga ne poziva i ne može se „zaboraviti“. Isti blok u .claude/settings.json u repou važio bi za sve u tom projektu (na računaru i u običnoj cloud sesiji), ali ne i u nitima Projects.'},
+    {p:'Primjer iz dokumentacije Claude Code (skills): ~/.claude/skills/summarize-changes/SKILL.md', t:'dobar', k:`---
+name: summarize-changes
+description: Summarizes uncommitted changes and flags anything risky. Use when the user asks what changed, wants a commit message, or asks to review their diff.
+---
+
+## Current changes
+
+!\`git diff HEAD\`
+
+## Instructions
+
+Summarize the changes above in two or three bullet points, then list any risks you notice.`, o:'description kaže ŠTA radi i KADA ga koristiti, pa ga Claude zna sam pozvati. Linija sa ! pokrene git diff HEAD prije nego Claude pročita skill. Poziv rukom: /summarize-changes.'},
+    {p:'Primjer iz dokumentacije Claude Code (plugins/create): my-first-plugin/.claude-plugin/plugin.json', t:'dobar', k:`{
+  "name": "my-first-plugin",
+  "description": "A greeting plugin to learn the basics",
+  "version": "1.0.0",
+  "author": {
+    "name": "Your Name"
+  }
+}`, o:'Samo plugin.json ide u .claude-plugin/. Skillovi idu pored, u my-first-plugin/skills/hello/SKILL.md, i pozivaju se kao /my-first-plugin:hello. Proba bez instalacije: claude --plugin-dir ./my-first-plugin.'},
+  ],
+  greske:[
+    'Kopiranje koda iz chata u fajlove ručno umjesto rada u agentu, pa niko ne pokrene testove.',
+    'Pravilo koje mora važiti uvijek napisano samo u CLAUDE.md, umjesto u hook ili test.',
+    'Skill ili hook stavljen u ~/.claude/ na računaru, pa očekivanje da radi u cloud niti projekta.',
+    'Tajna (API ključ, lozinka) u CLAUDE.md, u kodu ili u običnoj varijabli cloud okruženja.',
+    'Jedna sesija za sve teme cijeli dan: kontekst raste i svaka poruka sve više troši (/clear između zadataka).',
+    'Uvijek najjači model i max effort i za sitnice, pa limit nestane do podne.',
+    'Instaliran plugin iz nepoznatog izvora bez čitanja šta pokreće.',
+  ],
+  kviz:[
+    {p:'Treba ti tekst ponude za klijenta (kuhinja po mjeri). Šta otvaraš?', o:['Claude Code u repou inhome','Običan chat (po mogućnosti u projektu sa tvojim uputstvima)','Codex sa effort max','Hook'], t:1, e:'Rezultat je tekst, nema fajlova ni testova. Projekat u chatu čuva tvoja uputstva i dokumente, pa ih ne ponavljaš.'},
+    {p:'Želiš da se poslije svake izmjene fajla u src/ uvijek pokrenu testovi. Šta koristiš?', o:['Rečenicu u CLAUDE.md','Skill koji pozivaš rukom','PostToolUse hook sa matcherom Edit|Write','Viši effort'], t:2, e:'Hook izvršava mašina na događaj, svaki put. CLAUDE.md i skill su savjet koji model može preskočiti.'},
+    {p:'Napravio si skill u ~/.claude/skills/ na svom računaru. Hoće li ga imati nit u claude.ai/code projektu?', o:['Da, uvijek','Ne: cloud ne vidi tvoj ~/.claude/; uključi skill na claude.ai nalogu','Samo ako ga pomeneš u poruci','Samo ako je effort high'], t:1, e:'Cloud mašina ima samo ono što je u gitu i na tvom claude.ai nalogu. Skillovi iz repoa (.claude/skills/) se u nitima projekta takođe ne učitavaju.'},
+    {p:'Koja komanda u Claude Code sesiji pokazuje čime je popunjen kontekst?', o:['/context','/compact','/model','/hooks'], t:0, e:'/context pokaže zauzeće konteksta po dijelovima; /usage pokaže potrošnju tokena i plana.'},
+    {p:'Raspodjela u /usage („šta najviše troši“) izračunata je iz čega?', o:['Iz svih tvojih uređaja i chata na claude.ai','Iz historije sesija na tom računaru','Iz CLAUDE.md','Iz GitHuba'], t:1, e:'Zato drugi računar ili chat na claude.ai ne ulaze u tu raspodjelu.'},
+    {p:'Agent u cloud sesiji ne može preuzeti paket sa nekog sajta. Gdje je rješenje?', o:['U kodu aplikacije','U podešavanju cloud okruženja (pristup mreži ili setup skripta)','U /model','U kvizu'], t:1, e:'Mreža, varijable i instalirani alati su dio okruženja, ne koda.'},
+  ],
+  vjezba:{ z:'Za učionicu želiš: (1) da se testovi uvijek pokrenu prije commita, (2) postupak „kraj sesije“ koji pozivaš kad završiš, (3) da sve to imaš i u cloud nitima projekta. Za svaku stavku napiši: koji dio (CLAUDE.md, skill, hook, plugin), gdje stoji i ko ga pokreće.', h:'Šta mora važiti uvijek, a šta je postupak koji pokreneš kad hoćeš? Šta cloud nit projekta učitava iz repoa, a šta sa claude.ai naloga?',
+    r:`1. Testovi prije commita → hook (PreToolUse, matcher Bash, provjera da je komanda
+   git commit) ili git pre-commit hook u repou. Pokreće ga mašina, ne model.
+   Na računaru: .claude/settings.json (za projekat). U cloud niti Projects hookovi
+   iz repoa ne rade, pa tu ostaje pravilo u CLAUDE.md ("npm test mora proći")
+   i provjera u CI-ju.
+2. "Kraj sesije" → skill: .claude/skills/kraj-sesije/SKILL.md (za taj repo)
+   ili ~/.claude/skills/ (za sve tvoje projekte). Pozivaš ga sa /kraj-sesije;
+   description kaže kada ga Claude može sam ponuditi.
+3. Za cloud niti → skill uključi na claude.ai nalogu, a ako je dio plugina,
+   dodaj plugin u Project settings › Plugins. Pravila koda ostaju u CLAUDE.md,
+   jer ga svaka nit čita iz klona.`, obj:'Savjet (CLAUDE.md), postupak (skill) i pravilo koje mašina izvršava (hook, CI) su tri različite stvari. Za svaku je bitno i GDJE stoji, jer od toga zavisi da li je vidi lokalna sesija, cloud sesija ili nit projekta.'},
+  agent:[
+    'Pogledaj ovaj repo i reci mi: koje skillove, hookove i pluginse vidiš u .claude/ i u ~/.claude/, i koji od njih će se učitati u cloud niti projekta, a koji ne. Ništa ne mijenjaj.',
+    'Napravi PostToolUse hook u .claude/settings.json koji poslije izmjene fajla u src/ pokrene npm test i prijavi samo greške. Pokaži mi JSON prije upisa i objasni kako da ga provjerim sa /hooks.',
+    'Ovaj zadatak je mala izmjena teksta: radi sa Sonnetom i effort low. Ako naiđeš na nešto što traži dublje razmišljanje, stani i reci mi.',
+  ],
+},
 ];
 
 /* ================= RJEČNIK ================= */
@@ -774,6 +940,11 @@ const RJECNIK = [
 ['Worktree','Drugi radni folder iste git repozitorije na drugoj grani.','lek:ag6'],
 ['XSS','Napad gdje korisnički tekst postane skripta u tuđem pregledniku.','m8'],
 ['YAGNI','You Aren’t Gonna Need It: ne gradi unaprijed ono što možda zatreba.','m6'],
+['Cloud okruženje (environment)','Podešavanje mašine za cloud sesije: pristup mreži, varijable, tajne i setup skripta.','m12'],
+['Effort','Koliko model razmišlja prije odgovora (low … max); viši je bolji za teško, ali sporiji i skuplji.','m12'],
+['Marketplace (pluginsa)','Katalog pluginsa iz kojeg ih instaliraš po imenu, npr. ime@marketplace.','m12'],
+['Plugin','Paket skillova, hookova, agenata i MCP servera koji se instalira kao jedna cjelina.','m12'],
+['Token','Komadić teksta koji model čita ili piše; po tokenima se mjeri potrošnja i limit.','m12'],
 ['AGENTS.md / CLAUDE.md','Kratka pravila projekta koja agent pročita na početku svake sesije.','lek:ag3'],
 ['Commit','Snimljen, imenovan korak u historiji projekta (git).','lek:ag6'],
 ['Definicija gotovog','Provjerljiv uslov kad je zadatak završen, npr. „test:fast i novi test zeleni“.','lek:ag2'],
