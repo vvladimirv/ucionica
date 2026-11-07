@@ -68,7 +68,7 @@ function renderPotvrda() {
       <p class="pot-ime" id="potIme">${esc(P.data.ime || 'Tvoje ime')}</p>
       <p>Završen dio kursa: <b>${esc(d.naslov)}</b> — ${d.lekcije.length} lekcija, ${n} koraka, od toga ${ok} tačno bez pomoći.</p>
       <ul class="pot-lek">${d.lekcije.map(l => `<li>${esc(l.naslov)}</li>`).join('')}</ul>
-      <p class="small muted">Završeno: ${datumBs(P.data.zavrseno[d.id])}. Ovo je lična potvrda iz kursa za samostalno učenje, nije zvanični certifikat.</p></section>`;
+      <p class="small muted">Završeno: ${datumBs(P.data.zavrseno[d.id])} Ovo je lična potvrda iz kursa za samostalno učenje, nije zvanični certifikat.</p></section>`;
   $('#stampaj').onclick = () => { try { window.print(); } catch (_) { alert('Preglednik ne dozvoljava štampu odavde. Napravi snimak ekrana.'); } };
 }
 

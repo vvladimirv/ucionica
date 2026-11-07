@@ -7,14 +7,15 @@ pravom mini-stranicom, SQL preko sql.js. Primjeri su iz stvarnih projekata (inho
 
 | Dio | Sadržaj | Stanje |
 | --- | --- | --- |
-| 1 · Python od nule | 9 lekcija: print, varijable, if, liste, rječnici, funkcije, greške, klase, čitanje Flask rute | gotovo |
-| 2 · JavaScript | 8 lekcija: konzola, if/===, nizovi, objekti i JSON, funkcije, DOM, događaji, fetch/async | gotovo |
-| 3 · SQL i baze | 5 lekcija: SELECT, GROUP BY, JOIN, izmjene i pravila, transakcije/parametri/indeksi | gotovo |
-| 4 · Teme | 12 tema (web, baze, arhitektura, testiranje, sigurnost, Claude Code i Codex u praksi…) + rječnik | čitanje i kviz |
-| 5 · Rad sa AI agentima | 10 lekcija: kako agent radi, dobar zahtjev, CLAUDE.md/STATUS, hookovi, provjera rada, git i paralelni rad, Claude Code u praksi (sesije, plan mode, /loop), subagenti i MCP, Claude za posao (dokumenti, podaci, automatizacija), alati i završni zadatak | gotovo |
+| 1 · Python od nule | 9 lekcija: print, varijable, if, liste, rječnici, funkcije, greške, klase, čitanje Flask rute + projekat (ponuda za namještaj) | gotovo |
+| 2 · JavaScript | 8 lekcija: konzola, if/===, nizovi, objekti i JSON, funkcije, DOM, događaji, fetch/async + projekat (forma za upit) | gotovo |
+| 3 · SQL i baze | 5 lekcija: SELECT, GROUP BY, JOIN, izmjene i pravila, transakcije/parametri/indeksi + projekat (izvještaj faktura) | gotovo |
+| 4 · Teme | 12 tema (web, baze, arhitektura, testiranje, sigurnost, Claude Code i Codex u praksi…) + rječnik; teme 4 i 8 imaju i interaktivne vježbe | čitanje, kviz, vježbe |
+| 5 · Rad sa AI agentima | 10 lekcija: kako agent radi, dobar zahtjev, CLAUDE.md/STATUS, hookovi, provjera rada, git i paralelni rad, Claude Code u praksi (sesije, plan mode, /loop), subagenti i MCP, Claude za posao (dokumenti, podaci, automatizacija), alati i završni zadatak + projekat na svom repozitoriju (okvir 4D) | gotovo |
 
 Svaka lekcija je niz koraka: objašnjenje, primjer sa klikabilnim linijama, „predvidi rezultat“,
 „nađi grešku“, „popuni prazninu“, „poredaj linije“, zadatak sa automatskim testovima i kviz.
+Nova vrsta koraka je „poredaj i popuni“ (izmiješane linije sa prazninama). Oko lekcija su: **početna** (nastavi gdje si stao, napredak po dijelu, sedmični cilj), **Ponovi danas** (pitanja iz urađenih koraka se vraćaju poslije 1, 3, 7, 21 i 60 dana), **ulazni test** po dijelu, **potvrda o završetku** dijela (za štampu), **pretraga** kroz cijeli kurs i **bilješke** uz svaki korak.
 Uz to postoji AI tutor (Claude preko `sample` capability-ja) i napredak na nalogu (`db`, `user`).
 
 ## Struktura
@@ -30,7 +31,9 @@ src/js/NN-*.js                                 moduli; spajaju se po abecedi ime
   35…39-lekcije-ag-*.js  Dio 5 · Rad sa AI agentima (LEKCIJE_AG)
   04-izvrsavanje-tekst.js  provjera napisanog teksta (zahtjev agentu, prompt) za Dio 5
   40-teme.js             Dio 4 · teme, dijagrami i rječnik
-  5x-*.js                napredak i meni, vrste koraka, tutor, prikaz tema
+  41-teme-vjezbe.js      interaktivne vježbe uz teme (TEME[i].koraci)
+  5x-*.js                napredak i meni, vrste koraka, tutor, prikaz tema, ponavljanje i ulazni test (54),
+                         početna, potvrda, pretraga i bilješke (55)
   59-start.js            događaji i pokretanje (zadnji)
 scripts/                 build, provjere, lokalni pregled, uvoz iz artefakta
 ```
@@ -56,7 +59,8 @@ npm run pregled    # lokalno: http://127.0.0.1:8080
    rezultati SQL naredbi redom, zaštita stranice);
 3. **izvršavanje** svakog primjera, „predvidi“ koraka (izlaz mora odgovarati tačnoj opciji),
    greške i zadatka (rješenje prolazi testove, početni kod ne);
-4. **UI** — prolaz kroz sve korake kao učenik, teme, rječnik i širinu telefona (390 px).
+4. **UI** — prolaz kroz sve korake kao učenik (i vježbe tema), teme, rječnik, početnu, ponavljanje, ulazni test,
+   potvrdu, pretragu, bilješke i širinu telefona (390 px).
 
 Provjere rade u pravom Chromiumu, sa istim omotačem koji dodaje servis i sa CSP-om koji
 približno oponaša artefakt. Pyodide i sql.js se poslužuju lokalno iz `node_modules`
