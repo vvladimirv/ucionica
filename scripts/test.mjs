@@ -16,7 +16,7 @@ const ispisi = (naslov, greske, upozorenja = []) => {
 };
 
 const s = provjeriStrukturu();
-ispisi(`struktura: ${s.brojLekcija} lekcija, ${s.brojKoraka} koraka, ${s.brojTema} tema`, s.greske, s.upozorenja);
+ispisi(`struktura: ${s.brojLekcija} lekcija, ${s.brojKoraka} koraka (${s.brojVjezbi} u vježbama tema), ${s.brojTema} tema`, s.greske, s.upozorenja);
 if (s.greske.length) process.exit(1);
 
 const u = await otvoriUcionicu();
@@ -27,7 +27,7 @@ try {
   const iz = await provjeriIzvrsavanje(u, filter);
   ispisi(`izvršavanje: ${iz.provjereno} provjera`, iz.greske, iz.upozorenja);
   const ui = await provjeriUi(u, filter);
-  ispisi('UI: svi koraci kao učenik' + (filter.length ? '' : ', teme, rječnik'), ui.greske);
+  ispisi('UI: svi koraci kao učenik' + (filter.length ? '' : ', teme, rječnik, početna, ponavljanje, ulazni test, potvrda, pretraga, bilješke'), ui.greske);
   const stranica = u.greskeStranice;
   if (stranica.length) ispisi('greške stranice (konzola)', stranica);
   greske = rn.greske.length + iz.greske.length + ui.greske.length + stranica.length;

@@ -15,7 +15,8 @@ function renderTemaView() {
   const dio5 = DIJELOVI.find(d => d.poslijeTema && d.lekcije.length);
   $('#main').innerHTML = `
   <div class="lhead"><div class="eyebrow">Dio 4 · Tema ${m.n} od ${TEME.length - 1}</div><h2>${esc(m.naslov)}</h2><p class="muted">${esc(m.pod)}</p>
-  <div class="note warn small">Ova tema još nije pretvorena u interaktivne korake. Najbolje je prvo proći dijelove 1–3 (Python, JavaScript, SQL); za sve nejasno pitaj tutora.</div></div>
+  ${m.koraci ? '' : '<div class="note warn small">Ova tema još nije pretvorena u interaktivne korake. Najbolje je prvo proći dijelove 1–3 (Python, JavaScript, SQL); za sve nejasno pitaj tutora.</div>'}</div>
+  ${m.koraci ? (() => { const u = Object.keys(p.vj || {}).length; return `<section class="card vj-k"><div class="sec-t">Vježbe uz temu</div><p>${m.koraci.length} interaktivnih koraka: pokreni kod, predvidi rezultat, nađi grešku. Najbolje poslije čitanja teme.</p><div class="napr"><span style="width:${Math.round(100 * u / m.koraci.length)}%"></span></div><div class="row"><button class="btn primary" data-go="vj:${m.id}:${u && u < m.koraci.length ? u : 0}">${u ? (u < m.koraci.length ? 'Nastavi vježbe' : 'Ponovo vježbe') : 'Počni vježbe'} →</button><span class="small muted">${u}/${m.koraci.length}</span></div></section>`; })() : ''}
   <section class="card"><div class="sec-t">Ideja</div>${m.ideja.map(t => `<p>${t}</p>`).join('')}${m.analogija ? `<div class="analogy"><b>Analogija:</b> ${esc(m.analogija)}</div>` : ''}</section>
   ${(m.sekcije || []).map(x => `<section class="card"><div class="sec-t">${esc(x.n)}</div>${x.t.map(t => t.startsWith('<div') ? t : `<p>${t}</p>`).join('')}</section>`).join('')}
   ${m.dia ? `<section class="card"><div class="sec-t">Dijagram</div><div class="dia">${DIA[m.dia]()}</div></section>` : ''}
