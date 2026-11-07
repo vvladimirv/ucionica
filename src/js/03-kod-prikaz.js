@@ -7,6 +7,9 @@ const KW = {
   sql: 'SELECT|FROM|WHERE|JOIN|LEFT|INNER|ON|GROUP|BY|ORDER|HAVING|LIMIT|OFFSET|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|PRIMARY|KEY|FOREIGN|REFERENCES|NOT|NULL|AND|OR|AS|DESC|ASC|COUNT|SUM|AVG|MIN|MAX|DISTINCT|INTEGER|TEXT|REAL|BEGIN|COMMIT|ROLLBACK|IN|IS|LIKE|UNIQUE|CHECK|DEFAULT',
 };
 function hl(line, lang) {
+  // tekst (zahtjev agentu, CLAUDE.md, commit poruka): samo naslovi; diff: dodane i obrisane linije kao na GitHubu
+  if (lang === 'tekst') return /^#/.test(line) ? `<span class="kw">${esc(line)}</span>` : esc(line);
+  if (lang === 'diff') { const c = /^@@/.test(line) ? 'nu' : /^\+/.test(line) ? 'dfa' : /^-/.test(line) ? 'dfd' : ''; return c ? `<span class="${c}">${esc(line)}</span>` : esc(line); }
   if (lang === 'dom') lang = 'js';
   const kw = KW[lang] || KW.python;
   const com = lang === 'python' ? '#.*$' : lang === 'sql' ? '--.*$' : '\\/\\/.*$';

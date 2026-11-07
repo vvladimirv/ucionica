@@ -37,7 +37,7 @@ export async function provjeriIzvrsavanje(u, filter = []) {
         if (s.tip === 'primjer' && !s.bezPokretanja) {
           const r = await run(s.kod); provjereno++;
           if (!r || !r.ok) greske.push(`${gdje}: primjer pada — ${opisGreske(r)}`);
-        } else if (s.tip === 'predvidi') {
+        } else if (s.tip === 'predvidi' && !s.bezPokretanja) {
           const r = await run(s.kod); provjereno++;
           const tacna = s.opcije[s.t];
           if (!r) greske.push(`${gdje}: runner nije dostupan`);
@@ -58,7 +58,7 @@ export async function provjeriIzvrsavanje(u, filter = []) {
         } else if (s.tip === 'poredaj' && s.pokreni !== false) {
           const r = await run(s.linije.join('\n')); provjereno++;
           if (!r || !r.ok) greske.push(`${gdje}: tačan redoslijed pada — ${opisGreske(r)}`);
-        } else if (s.tip === 'greska') {
+        } else if (s.tip === 'greska' && !s.bezPokretanja) {
           const r = await run(s.kod); provjereno++;
           if (!r) greske.push(`${gdje}: runner nije dostupan`);
           else if (r.ok) greske.push(`${gdje}: kod "sa greškom" se izvršava bez greške`);

@@ -1,5 +1,6 @@
 // ============================================================================
 // Tutor: Claude preko `sample` capability-ja (troši tvoj Claude plan; prvi poziv traži dozvolu).
+// Rezerva bez Claude-a: drugiAi() pripremi isto pitanje za besplatni Gemini/ChatGPT/Copilot (kopiraj-zalijepi).
 // Kontekst (lekcija, korak, tvoj kod, zadnji rezultat) šalje se uz svako pitanje.
 // ============================================================================
 let sample = null, tCtl = null;
@@ -7,11 +8,12 @@ const tTurns = [];
 const TUTOR_RULES = `Ti si strpljiv nastavnik programiranja u aplikaciji „Učionica programiranja“. Učenik je odrasla osoba koja je sa AI agentima pravila web aplikacije (Flask/Python backend, vanilla JavaScript frontend, SQLite/PostgreSQL) za svoju firmu (namještaj po mjeri, klijenti, ponude, fakture), ali NE zna čitati ni pisati kod — uči od nule.
 Pravila:
 - Odgovaraj na bosanskom (ijekavica), jednostavnim riječima i kratko (do ~150 riječi, osim ako traži više).
-- Svaki stručni pojam objasni čim ga uvedeš; koristi analogije iz svakodnevnog života ili iz njegove firme.
+- Svaki stručni pojam objasni čim ga uvedeš; koristi analogije iz svakodnevnog života ili iz učenikove firme.
 - Kod objašnjavaj liniju po liniju: šta računar radi i kojim redom.
 - Kod zadataka NE daj gotovo rješenje odmah: prvo nagovještaj ili pitanje koje ga vodi. Cijelo rješenje samo ako izričito traži.
-- Kad vidiš grešku u njegovom kodu, reci na kojoj liniji i zašto, pa ga pusti da sam popravi.
-- Kod piši u trostrukim backtickovima.`;
+- Kad vidiš grešku u učenikovom kodu, reci na kojoj liniji i zašto, pa ga pusti da sam popravi.
+- Kod piši u trostrukim backtickovima.
+- Cilj kursa je rad sa AI agentima (Claude Code, Codex): kad ima smisla, pokaži kako bi se to precizno reklo agentu ili kako provjeriti njegov rezultat.`;
 
 function stepContext() {
   if (cur.tip === 'tema') return `Učenik čita temu: ${TEME.find(t => t.id === cur.id)?.naslov}.`;
@@ -28,12 +30,14 @@ function stepContext() {
   if (s.linije) c += `\nLinije za poredati:\n${s.linije.join('\n')}`;
   if (stepState.linija) c += `\nUčenik je označio liniju ${stepState.linija}.`;
   if (stepState.ta) c += `\nUčenikov trenutni kod:\n${stepState.ta.value.slice(0, 3000)}`;
-  if (stepState.last) c += `\nZadnje pokretanje: izlaz=${JSON.stringify(stepState.last.out || '').slice(0, 800)}; greška=${stepState.last.err || 'nema'}; testovi=${JSON.stringify(stepState.last.tests || [])}`;
+  if (stepState.last) {
+    const testovi = (stepState.last.tests || []).map((t, i) => `${t.ok ? '✓' : t.ok === false ? '✗' : '○'} ${s.testovi?.[i]?.opis || 'test ' + (i + 1)}${t.m ? ' — ' + t.m : ''}`).join('\n');
+    c += `\nZadnje pokretanje: izlaz=${JSON.stringify(stepState.last.out || '').slice(0, 800)}; greška=${stepState.last.err || 'nema'}${testovi ? '\nTestovi:\n' + testovi : ''}`;
+  }
   return c;
 }
 
 function renderTutorQuick() {
-  if (!sample) return;
   const q = cur.tip === 'lek'
     ? ['Objasni ovaj korak jednostavnije', 'Daj mi još jedan primjer', 'Zašto se ovo radi ovako?', 'Šta nije u redu s mojim kodom?']
     : ['Objasni ovu temu jednostavnije', 'Daj primjer iz mog posla'];
@@ -44,25 +48,56 @@ function tMsg(role, text) {
   $('#tMsgs').appendChild(d); $('#tMsgs').scrollTop = 1e9; return d;
 }
 function openTutor() { $('#tutor').hidden = false; $('#tOpen').hidden = true; $('#layout').classList.add('tutor-open'); $('#tIn').focus(); }
-function closeTutor() { $('#tutor').hidden = true; $('#tOpen').hidden = !sample; $('#layout').classList.remove('tutor-open'); }
+function closeTutor() { $('#tutor').hidden = true; $('#tOpen').hidden = false; $('#layout').classList.remove('tutor-open'); }
 
+// Cijelo pitanje sa pravilima i kontekstom koraka — isti tekst ide Claude-u ili u drugi AI.
+const tutorPrompt = pitanje => TUTOR_RULES + '\n\nKontekst (gdje je učenik sada):\n' + stepContext() + (pitanje ? '\n\nPitanje učenika: ' + pitanje : '\n\nPitanje slijedi.');
+
+// Rezerva kad Claude nije dostupan ili je potrošen limit: tekst za besplatni AI u drugom tabu.
+// Stranica sama ne može zvati druge AI servise (mreža artifacta je blokirana), pa ide kopiraj-zalijepi.
+const DRUGI_AI = [['Gemini', 'https://gemini.google.com/app'], ['ChatGPT', 'https://chatgpt.com/'], ['Copilot', 'https://copilot.microsoft.com/']];
+function drugiAi(pitanje, razlog = '') {
+  openTutor();
+  const d = document.createElement('div'); d.className = 'tm a drugi';
+  d.innerHTML = `${razlog ? `<p class="small">${esc(razlog)}</p>` : ''}<p class="small"><b>Pitaj besplatni AI:</b> kopiraj tekst ispod (u njemu su pravila tutora, ovaj korak i tvoj kod), otvori jedan od linkova i zalijepi (Ctrl+V).</p>
+    <textarea readonly rows="6" aria-label="Pitanje za drugi AI">${esc(tutorPrompt(pitanje))}</textarea>
+    <div class="row"><button class="btn small primary" data-kopiraj>📋 Kopiraj</button>${DRUGI_AI.map(([n, u]) => `<a class="btn small" href="${u}" target="_blank" rel="noopener">${n} ↗</a>`).join('')}</div><span class="small muted" data-kop-poruka></span>`;
+  $('#tMsgs').appendChild(d); $('#tMsgs').scrollTop = 1e9;
+  d.querySelector('[data-kopiraj]').onclick = async () => {
+    const ta = d.querySelector('textarea'), por = d.querySelector('[data-kop-poruka]');
+    try { await navigator.clipboard.writeText(ta.value); por.textContent = '✓ Kopirano. Zalijepi u drugi AI.'; }
+    catch (_) {
+      ta.focus(); ta.select();
+      let ok = false; try { ok = document.execCommand('copy'); } catch (_) {}
+      por.textContent = ok ? '✓ Kopirano. Zalijepi u drugi AI.' : 'Tekst je označen — pritisni Ctrl+C.';
+    }
+  };
+}
+
+let claudeNedostupan = false;   // poslije odbijene dozvole ili isključenog Claude-a: odmah drugi AI
 async function ask(text) {
-  if (!sample || !text.trim()) return;
+  if (!text.trim()) return;
+  if (!sample || claudeNedostupan) { openTutor(); tMsg('user', text); drugiAi(text); return; }
   openTutor();
   tMsg('user', text); tTurns.push({ role: 'user', content: text });
   const d = tMsg('assistant', 'Razmišljam…');
   tCtl?.abort(); tCtl = new AbortController();
   $('#tStop').hidden = false; $('#tSend').disabled = true;
-  const input = [{ role: 'user', content: TUTOR_RULES + '\n\nKontekst (gdje je učenik sada):\n' + stepContext() + '\n\nPitanje slijedi.' }, ...tTurns.slice(-8)];
+  const input = [{ role: 'user', content: tutorPrompt('') }, ...tTurns.slice(-8)];
+  // quick: brži i jeftiniji model, pa plan traje mnogo duže; „Detaljniji odgovor“ uzima jači model
+  const modelTier = $('#tDetalj')?.checked ? 'default' : 'quick';
   try {
-    const { text: t } = await sample(input, { cache: false, signal: tCtl.signal, onText: ({ text: x }) => { d.textContent = x; $('#tMsgs').scrollTop = 1e9; } });
+    const { text: t } = await sample(input, { cache: false, modelTier, signal: tCtl.signal, onText: ({ text: x }) => { d.textContent = x; $('#tMsgs').scrollTop = 1e9; } });
     d.textContent = t; tTurns.push({ role: 'assistant', content: t });
   } catch (e) {
     d.textContent = e.text || '';
     if (e.code === 'cancelled') { if (!e.text) d.remove(); }
-    else if (['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed'].includes(e.code)) { d.className = 'tm err'; d.textContent = 'Tutor nije dozvoljen u ovom prikazu. Ostatak aplikacije radi normalno.'; ENV.tutor = 'bad'; renderStatus(); }
-    else if (e.code === 'rate_limited') { d.className = 'tm err'; d.textContent = (e.text ? e.text + '\n\n' : '') + 'Previše pitanja odjednom ili je dostignut limit. Pokušaj malo kasnije.'; }
-    else { d.className = 'tm err'; d.textContent = (e.text ? e.text + '\n\n' : '') + 'Odgovor je prekinut. Pošalji pitanje ponovo.'; }
+    else if (['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed'].includes(e.code)) {
+      d.remove(); claudeNedostupan = true; ENV.tutor = 'drugi'; renderStatus();
+      drugiAi(text, 'Claude tutor nije dozvoljen u ovom prikazu.');
+    }
+    else if (e.code === 'rate_limited') { if (!e.text) d.remove(); else d.className = 'tm err'; drugiAi(text, 'Claude limit je potrošen ili je previše pitanja odjednom. Dok se limit ne obnovi, pitaj besplatni AI.'); }
+    else { d.className = 'tm err'; d.textContent = (e.text ? e.text + '\n\n' : '') + 'Odgovor je prekinut. Pošalji pitanje ponovo ili pitaj drugi AI (📋 dugme dolje).'; }
   } finally { $('#tStop').hidden = true; $('#tSend').disabled = false; }
 }
 

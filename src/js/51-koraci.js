@@ -2,13 +2,14 @@
 // Lekcija i vrste koraka. Svaki korak je objekat sa `tip` i poljima za tu vrstu:
 //   tekst    {html}
 //   primjer  {kod, jezik?, obj:{brojLinije: 'objašnjenje'}, uvod?, poslije?, bezPokretanja?}
-//   predvidi {kod, opcije:[], t, obj, pitanje?}          (" · " u opciji = novi red izlaza)
+//   predvidi {kod, opcije:[], t, obj, pitanje?, bezPokretanja?}       (" · " u opciji = novi red izlaza)
 //   popuni   {kod sa ___, odg:[[prihvatljivi odgovori]…], obj, pitanje?, pokreni?}
 //   poredaj  {linije:[tačan redoslijed], obj, pitanje?, pokreni?}
-//   greska   {kod, linija, obj, ispravno?, pitanje?}
+//   greska   {kod, linija, obj, ispravno?, pitanje?, bezPokretanja?}
 //   zadatak  {opis(html), pocetak, testovi:[{opis, kod}], nagovjestaji:[], rjesenje, objRj?, poslije?}
 //   kviz     {p, o:[], t, e}
 // jezik: 'python' (podrazumijevano) | 'js' (konzola, Worker) | 'dom' (stranica u okviru) | 'sql'
+//        | 'tekst' (napisan tekst, npr. zahtjev agentu; testovi u 04-izvrsavanje-tekst.js) | 'diff' (samo prikaz)
 // setup: za sql SQL koji pripremi bazu, za dom HTML stranice u okviru prije pokretanja koda.
 // Testovi: python assert (IZLAZ, KOD, _sa_vrijednostima); js/dom ocekuj(stvarno, ocekivano, poruka),
 // js još IZLAZ, KOD, saVrijednostima({ime: vrijednost}); dom T.klikni/upisi/posalji/tekst/broj/stranica/IZLAZ;
@@ -54,12 +55,13 @@ function renderLek() {
   const sljedeciDio = DIJELOVI.slice(DIJELOVI.indexOf(dio) + 1).find(d => d.lekcije.length);
   const dalje = !zadnji ? `<button class="btn primary" data-go="lek:${lek.id}:${cur.k + 1}">Dalje →</button>`
     : sljedeca ? `<button class="btn primary" data-go="lek:${sljedeca.id}:0">Sljedeća lekcija: ${esc(sljedeca.naslov)} →</button>`
+    : sljedeciDio?.poslijeTema && !dio.poslijeTema && typeof TEME !== 'undefined' ? `<span class="muted small">Kraj ovog dijela ✓</span><button class="btn primary" data-go="tema:${TEME[0].id}">Dio 4 · Teme →</button>`
     : sljedeciDio ? `<span class="muted small">Kraj ovog dijela ✓</span><button class="btn primary" data-go="lek:${sljedeciDio.lekcije[0].id}:0">${esc(sljedeciDio.naslov)} →</button>`
     : `<span class="muted small">Kraj ovog dijela ✓</span>`;
   $('#main').innerHTML = `
     <div class="lhead"><div class="eyebrow">${esc(dio.naslov)} · lekcija ${li + 1}</div><h2>${esc(lek.naslov)}</h2>${lek.cilj ? `<p class="muted">${esc(lek.cilj)}</p>` : ''}<div class="dots" id="dots"></div></div>
     <section class="card"><div class="steptype">Korak ${cur.k + 1}/${lek.koraci.length} · ${TIPNAZIV[s.tip]}</div>${s.naslov ? `<h3>${esc(s.naslov)}</h3>` : ''}<div class="stepbody" id="step"></div></section>
-    <div class="navbtns"><button class="btn" data-go="lek:${lek.id}:${cur.k - 1}" ${cur.k === 0 ? 'disabled' : ''}>← Nazad</button><button class="btn" data-tutor-explain ${sample ? '' : 'hidden'}>🤔 Ne razumijem ovaj korak</button>${dalje}</div>`;
+    <div class="navbtns"><button class="btn" data-go="lek:${lek.id}:${cur.k - 1}" ${cur.k === 0 ? 'disabled' : ''}>← Nazad</button><button class="btn" data-tutor-explain>🤔 Ne razumijem ovaj korak</button>${dalje}</div>`;
   renderDots();
   STEP[s.tip]($('#step'), s);
   if (s.tip === 'tekst' || s.tip === 'primjer') markStep('vidjeno');
@@ -107,7 +109,7 @@ const STEP = {
     el.querySelectorAll('[data-o]').forEach(b => b.onclick = () => {
       const i = Number(b.dataset.o);
       el.querySelectorAll('[data-o]').forEach(x => { x.disabled = true; const k = Number(x.dataset.o); if (k === s.t) x.classList.add('ok'); else if (k === i) x.classList.add('no'); });
-      $('#fb').innerHTML = `<div class="fb ${i === s.t ? 'ok' : 'no'}">${i === s.t ? '✓ Tačno! ' : '✗ Nije. '}${s.obj}</div><div class="row"><button class="btn" id="runp">▶ Pokreni i uvjeri se</button></div>`;
+      $('#fb').innerHTML = `<div class="fb ${i === s.t ? 'ok' : 'no'}">${i === s.t ? '✓ Tačno! ' : '✗ Nije. '}${s.obj}</div><div class="row" ${s.bezPokretanja ? 'hidden' : ''}><button class="btn" id="runp">▶ Pokreni i uvjeri se</button></div>`;
       markStep(i === s.t ? 'ok' : 'pomoc');
       $('#runp').onclick = () => pokreni(lang, s.kod, [], s.setup, $('#res'));
     });
@@ -163,13 +165,13 @@ const STEP = {
 
   greska(el, s) {
     const lang = s.jezik || 'python'; let done = false;
-    el.innerHTML = `<p>${s.pitanje || 'Ovaj kod ima grešku. Klikni na liniju u kojoj je greška.'}</p>${okruzenje(s)}${kodHtml(s.kod, lang, { klik: true })}<div class="row"><button class="btn" id="runb">▶ Pokreni (pogledaj poruku greške)</button></div><div id="fb"></div><div id="res"></div>`;
+    el.innerHTML = `<p>${s.pitanje || 'Ovaj kod ima grešku. Klikni na liniju u kojoj je greška.'}</p>${okruzenje(s)}${kodHtml(s.kod, lang, { klik: true })}<div class="row" ${s.bezPokretanja ? 'hidden' : ''}><button class="btn" id="runb">▶ Pokreni (pogledaj poruku greške)</button></div><div id="fb"></div><div id="res"></div>`;
     el.querySelectorAll('.ln').forEach(ln => ln.onclick = () => {
       if (done) return;
       const n = Number(ln.dataset.ln); const ok = n === s.linija;
       ln.classList.add(ok ? 'ok' : 'no-ok');
       if (ok) { done = true; markStep('ok'); $('#fb').innerHTML = `<div class="fb ok">✓ Tačno, linija ${n}. ${s.obj}</div>${s.ispravno ? `<p class="small">Ispravno:</p>${kodHtml(s.ispravno, lang)}` : ''}`; }
-      else $('#fb').innerHTML = `<div class="fb no">✗ Linija ${n} je u redu. Pokreni kod i pročitaj poruku greške — ona obično kaže broj linije.</div>`;
+      else $('#fb').innerHTML = `<div class="fb no">✗ Linija ${n} je u redu. ${s.bezPokretanja ? 'Čitaj liniju po liniju i pitaj se da li krši neko pravilo projekta.' : 'Pokreni kod i pročitaj poruku greške — ona obično kaže broj linije.'}</div>`;
     });
     $('#runb').onclick = () => pokreni(lang, s.kod, [], s.setup, $('#res'));
   },

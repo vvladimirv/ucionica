@@ -1,66 +1,55 @@
 # Status
 
-Ažurirano: 2026-09-26.
+Ažurirano: 2026-11-07.
 
 ## Gdje smo
 
+Svih pet dijelova je gotovo (Dio 4 je čitanje i kviz, ne interaktivni koraci).
+
 | Dio | Stanje |
 | --- | --- |
-| 1 · Python od nule | 9 lekcija, 99 koraka — gotovo |
-| 2 · JavaScript | 8 lekcija, 104 koraka — gotovo |
-| 3 · SQL i baze | 5 lekcija, 64 koraka — gotovo |
-| 4 · Teme | 12 tema + rječnik; čitanje i kviz, nisu interaktivni koraci |
+| 1 · Python / 2 · JavaScript / 3 · SQL | 9 + 8 + 5 lekcija, 267 koraka |
+| 4 · Teme | 12 tema + rječnik (tema 11, id `m12`, je „Claude Code i Codex u praksi“) |
+| 5 · Rad sa AI agentima | 10 lekcija, 100 koraka |
 
-- `npm test`: 22 lekcije, 267 koraka, 56 slučajeva runnera, 169 izvršnih provjera, UI prolaz i
-  telefon (390 px) — sve prolazi.
-- Artefakt: <https://claude.ai/artifact/V4DU7enjHTwhCZ2a1vMEq8>. Objavljuje se samo `dist/index.html`;
-  runtime fajlovi (`py/`, `sql/`) se ne mijenjaju. Capabilities `sample`, `db` i `user` su zadržane.
-  Zadnja objava: vidi niže, „Objave“.
+- `npm test`: 32 lekcije, 367 koraka, 12 tema — sve prolazi. U cloud sesiji treba
+  `CHROMIUM_PATH=/opt/pw-browsers/chromium`.
+- Artefakt: <https://claude.ai/artifact/V4DU7enjHTwhCZ2a1vMEq8>, zadnja objava verzija 10
+  (`1794034384-5891`, 2026-11-07, ova grana). Objavljuje se samo `dist/index.html`.
 
-## Novo u fazi „Dio 3 · SQL“
+## Grane (važno)
 
-- `runSql` izvršava naredbe jednu po jednu: rezultati idu redom (tabela ili poruka tipa
-  „✓ UPDATE — izmijenjeno redova: 2“) i ostaju i kad kasnija naredba padne; prazan SELECT pokaže
-  kolone. Linija greške se izvodi iz poruke SQLite-a (sql.js ne daje poziciju).
-- SQL koraci iznad upita pokazuju tabele učioničke baze i SQL koji ih pravi.
-- SQL testovi mogu provjeriti i sam kod (`kodSadrzi`).
+- Prava osnova je `ccr-8159b8b3-ddj45s` (PR #1, Dio 5), jer ona odgovara živoj stranici. Zadana grana
+  `claude/eager-hamilton-bilyvq` nema Dio 5. Ova grana `claude/project-thread-9nslst` (PR #2) je naslonjena
+  na PR #1: spoji prvo #1, pa #2.
+- Prije svake objave pročitaj živi artefakt i uporedi build grane s njim; ako se id verzije razlikuje
+  od zadnjeg u „Objave“, prvo uvezi (`scripts/uvezi.mjs`).
+- Repozitorij je **javan**, a teme sadrže citate i nalaze iz inhome i Sole-KP: preporuka je prebaciti ga u
+  privatni (Settings → General → Danger Zone).
 
-## Poznata ograničenja (nije provjereno ili nije moguće provjeriti ovdje)
+## Poznata ograničenja
 
-- Tačan CSP artefakta nije poznat. Provjere koriste približan i namjerno strog CSP. Oslanja se
-  samo na ono što je test-artefakt „Test izvršavanja koda“ potvrdio u stvarnom okruženju:
-  `new Function`, Worker iz blob-a, sql.js i Pyodide. iframe se ne koristi.
-- Provjere rade samo u Chromiumu. Broj linije za greške u `dom` koraku čita se iz V8 formata steka
-  (Chrome, Edge); u Firefoxu i Safariju poruka greške radi, ali broj linije možda izostane.
-- Linija SQL greške je procjena iz poruke (npr. `near "FROM"` → prvo mjesto u ostatku koda). Za tipične
-  greške početnika je tačna, ali ne za svaku moguću.
-- `dom` kod radi na glavnoj niti: petlje prekida čuvar poslije 1,5 s, ali kod koji namjerno ide
-  preko `globalThis.document` može dirati stranicu učionice.
-- Tutor (`sample`) i napredak na nalogu (`db`, `user`) ne postoje u lokalnim provjerama
-  (nema `window.claude`), pa su provjereni samo tako da stranica radi bez njih.
+- Tačan CSP artefakta nije poznat; provjere koriste približan strog CSP. iframe se ne koristi.
+- Provjere rade samo u Chromiumu; broj linije greške u `dom` koraku čita V8 stek.
+- Linija SQL greške je procjena iz poruke SQLite-a.
+- Tutor (`sample`) i napredak (`db`, `user`) se ne mogu provjeriti lokalno.
+- Tema 11: činjenice o Claude Code su iz code.claude.com/docs (2026-11-07), a za Codex iz izvornog koda
+  github.com/openai/codex; alati se brzo mijenjaju, pa provjeri prije veće izmjene.
 
 ## Sljedeći korak
 
-Sva tri dijela sa kodom su gotova. Mogući nastavci (odlučuje korisnik):
+Odlučuje korisnik:
 
-1. **Teme kao interaktivni koraci** — npr. Tema 3/4 (baze) i Tema 8 (sigurnost) sa SQL i JS zadacima.
-2. **Napredniji nivo** — npr. Python + SQL zajedno (sqlite3 iz Pythona), testovi (pytest) ili Flask
-   ruta sa bazom. Za sqlite3 u Pyodide-u treba objaviti i njegov paket uz artefakt (sada ga nema).
+1. Spojiti PR #1, pa PR #2 (i razmisliti o zadanoj grani).
+2. **Runner `tekst`** u `provjeri-runnere.mjs` (sada ga provjeravaju samo zadaci).
+3. **Teme kao interaktivni koraci** (baze, sigurnost) ili napredniji nivo (Python + SQL, pytest).
 
-Kod iz inhome i Sole-KP citiraj samo iz samih repozitorija. Postojeći citati su iz ranije sesije.
-
-## Repozitorij
-
-- Grane: `claude/eager-hamilton-bilyvq` (razvoj) i `main`. `main` je napravljen 2026-09-26 na stanju
-  sa Dijelom 2 (`32240da`) i ne pomjera se bez dogovora.
-- Zadana grana na GitHubu je i dalje `claude/eager-hamilton-bilyvq`; promjena je u postavkama
-  (Settings → General → Default branch) i nije dostupna iz Claude sesije.
-- Repozitorij je **javan**, a teme sadrže citate i sigurnosne nalaze iz inhome i Sole-KP. Preporuka
-  korisniku: prebaciti ga u privatni (Settings → General → Danger Zone → Change visibility).
+Kod iz inhome i Sole-KP citiraj samo kako stvarno piše u tim repozitorijima.
 
 ## Objave
 
-| Verzija | Id | Datum | Commit | Sadržaj |
-| --- | --- | --- | --- | --- |
-| 6 | `1790409771-0c3a` | 2026-09-26 | `357387f` | Dio 2 · JavaScript |
-| 7 | `1790411547-d968` | 2026-09-26 | `d9ad761` | Dio 3 · SQL |
+| Verzija | Id | Datum | Sadržaj |
+| --- | --- | --- | --- |
+| 7 | `1790411547-d968` | 2026-09-26 | Dio 3 · SQL |
+| 9 | `1791047870-4b9c` | 2026-10-03 | Dio 5 · ag1–ag10 |
+| 10 | `1794034384-5891` | 2026-11-07 | Tema 11 · Claude Code i Codex u praksi |
