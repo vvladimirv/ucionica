@@ -10,7 +10,14 @@ document.addEventListener('click', e => {
   const td = e.target.closest('[data-tdone]'); if (td) { const id = td.dataset.tdone; P.data.teme[id] = { ...(P.data.teme[id] || {}), done: !(P.data.teme[id] || {}).done }; P.save(); render(); return; }
   const to = e.target.closest('[data-topt]'); if (to) temaKviz(to);
 });
+document.addEventListener('change', e => {
+  if (e.target.id === 'ciljSel') { P.data.cilj = Number(e.target.value); P.save(); renderPocetna(); }
+});
 document.addEventListener('input', e => {
+  const bj = e.target.closest?.('[data-bilj]');
+  if (bj) { (P.data.biljeske || (P.data.biljeske = {}))[bj.dataset.bilj] = bj.value; P.save(); return; }
+  if (e.target.id === 'trazi') { const v = e.target.value; renderPretraga(v); const i = $('#trazi'); i.focus(); i.setSelectionRange(v.length, v.length); return; }
+  if (e.target.id === 'imePotvrda') { P.data.ime = e.target.value; $('#potIme').textContent = e.target.value || 'Tvoje ime'; P.save(); return; }
   if (e.target.id === 'glq') { const v = e.target.value; renderRjecnikView(v); const i = $('#glq'); i.focus(); i.setSelectionRange(v.length, v.length); }
 });
 $('#tSend').onclick = () => { const v = $('#tIn').value; $('#tIn').value = ''; ask(v); };
@@ -22,7 +29,8 @@ $('#tDrugi').onclick = () => { const v = $('#tIn').value; $('#tIn').value = ''; 
 
 P.load();
 renderStatus();
-go((location.hash || '').slice(1).replace(/-/g, ':') || P.data.zadnje || '', false);
+Ponovi.dopuni();
+go((location.hash || '').slice(1).replace(/-/g, ':') || 'pocetna', false);
 P.cloud();
 loadSql();
 claudeUse('sample').then(s => {

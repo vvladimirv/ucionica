@@ -12,6 +12,10 @@ Kurs je jedna HTML stranica (Claude artefakt) sastavljena iz `src/`. Stanje i sl
   `2x` JavaScript (`LEKCIJE_JS`), `3x` SQL (`LEKCIJE_SQL`); moraju biti prije `50-…`.
   `35`–`39` Dio 5 · Rad sa AI agentima (`LEKCIJE_AG`; redoslijed lekcija = redoslijed `push`, završna je
   `ag7` u `39-…`; id-jeve ne mijenjaj, napredak učenika je vezan za njih). Teme su u `40-teme.js`.
+- Projekti (`projekat: true`) su zadnje lekcije dijelova: `14-…` py10, `24-…` js9, `32-…` sql6, `38-…-e-projekat` ag11
+  (prije `ag7`). Vježbe uz teme su `TEME[i].koraci` u `41-teme-vjezbe.js`; napredak je po indeksu koraka, pa nove
+  korake u lekciji ili vježbi dodaj samo **na kraj** (i za ponavljanje, ključ je `lekcija:indeks`). Id lekcije ne
+  počinje sa `m`. Ponavljanje i ulazni test su u `54-ponavljanje.js`, početna/potvrda/pretraga/bilješke u `55-pregled.js`.
 - Koraci bez izvršavanja: `jezik: 'tekst'` (zahtjev agentu, prompt; testovi `ima`/`bilo`/`nema`/`maxLinija`/
   `minRijeci`, opis na vrhu `04-izvrsavanje-tekst.js`) i `jezik: 'diff'`; `predvidi`/`greska`/`primjer` tada
   imaju `bezPokretanja: true`.

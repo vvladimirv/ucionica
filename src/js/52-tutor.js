@@ -17,10 +17,11 @@ Pravila:
 
 function stepContext() {
   if (cur.tip === 'tema') return `Učenik čita temu: ${TEME.find(t => t.id === cur.id)?.naslov}.`;
-  if (cur.tip !== 'lek') return 'Učenik je u rječniku pojmova.';
-  const lek = findLek(cur.id), s = lek.koraci[cur.k];
+  const r = trenutniKorak();
+  if (!r) return cur.tip === 'rjecnik' ? 'Učenik je u rječniku pojmova.' : `Učenik je na stranici: ${cur.tip}.`;
+  const s = r.s;
   const strip = h => String(h || '').replace(/<[^>]+>/g, '').slice(0, 2500);
-  let c = `Lekcija: ${lek.naslov}. Korak ${cur.k + 1}/${lek.koraci.length} (${TIPNAZIV[s.tip]}).`;
+  let c = `${r.gdje}. Korak ${r.k + 1}/${r.n} (${TIPNAZIV[s.tip]}).`;
   if (s.html) c += `\nTekst koraka: ${strip(s.html)}`;
   if (s.opis) c += `\nZadatak: ${strip(s.opis)}`;
   if (s.p) c += `\nPitanje: ${s.p}`;
@@ -38,7 +39,7 @@ function stepContext() {
 }
 
 function renderTutorQuick() {
-  const q = cur.tip === 'lek'
+  const q = trenutniKorak()
     ? ['Objasni ovaj korak jednostavnije', 'Daj mi još jedan primjer', 'Zašto se ovo radi ovako?', 'Šta nije u redu s mojim kodom?']
     : ['Objasni ovu temu jednostavnije', 'Daj primjer iz mog posla'];
   $('#tQuick').innerHTML = q.map(x => `<button data-tq="${esc(x)}">${esc(x)}</button>`).join('');

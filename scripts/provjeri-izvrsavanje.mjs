@@ -6,7 +6,7 @@
 //   zadatak  → rješenje prolazi sve testove, a početni kod ne
 // Upotreba: node scripts/provjeri-izvrsavanje.mjs [id-lekcije …]
 import { fileURLToPath } from 'node:url';
-import { ucitajLekcije, jezikKoraka } from './lib/lekcije.mjs';
+import { ucitajLekcije, jezikKoraka, nizoviKoraka } from './lib/lekcije.mjs';
 import { otvoriUcionicu } from './lib/preglednik.mjs';
 
 export const normIzlaz = out => String(out || '').replace(/\n+$/, '').split('\n').map(l => l.replace(/\s+$/, '')).join(' · ');
@@ -21,12 +21,12 @@ async function pokreni(page, jezik, kod, testovi, setup) {
 }
 
 export async function provjeriIzvrsavanje(u, filter = []) {
-  const { dijelovi } = ucitajLekcije();
+  const sve = ucitajLekcije();
   const greske = [], upozorenja = [];
   let provjereno = 0;
   const { page } = u;
   await page.evaluate(() => loadPy());
-  for (const d of dijelovi) for (const lek of d.lekcije) {
+  for (const lek of nizoviKoraka(sve)) {
     if (filter.length && !filter.includes(lek.id)) continue;
     for (const [k, s] of lek.koraci.entries()) {
       const gdje = `${lek.id} korak ${k + 1} (${s.tip})`;
@@ -55,6 +55,10 @@ export async function provjeriIzvrsavanje(u, filter = []) {
           let i = 0; const kod = s.kod.replace(/___/g, () => s.odg[i++][0]);
           const r = await run(kod); provjereno++;
           if (!r || !r.ok) greske.push(`${gdje}: kod sa rješenjima praznina pada — ${opisGreske(r)}`);
+        } else if (s.tip === 'poredajPopuni' && s.pokreni !== false) {
+          let i = 0; const kod = s.linije.map(l => l.replace(/___/g, () => s.odg[i++][0])).join('\n');
+          const r = await run(kod); provjereno++;
+          if (!r || !r.ok) greske.push(`${gdje}: tačan redoslijed sa rješenjima praznina pada — ${opisGreske(r)}`);
         } else if (s.tip === 'poredaj' && s.pokreni !== false) {
           const r = await run(s.linije.join('\n')); provjereno++;
           if (!r || !r.ok) greske.push(`${gdje}: tačan redoslijed pada — ${opisGreske(r)}`);

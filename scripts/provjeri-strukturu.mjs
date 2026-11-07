@@ -2,7 +2,7 @@
 // broj praznina, jedinstveni id-jevi i uparene HTML oznake u poljima koja idu kroz innerHTML.
 // Upotreba: node scripts/provjeri-strukturu.mjs   (izlaz 1 ako ima grešaka)
 import { fileURLToPath } from 'node:url';
-import { ucitajLekcije, jezikKoraka } from './lib/lekcije.mjs';
+import { ucitajLekcije, jezikKoraka, nizoviKoraka } from './lib/lekcije.mjs';
 
 // Polja po vrsti koraka; ista šema je opisana na vrhu src/js/04-koraci.js.
 const ZAJEDNICKA = ['naslov', 'jezik', 'setup', 'bezPokretanja'];
@@ -12,6 +12,7 @@ export const SHEMA = {
   predvidi: { obavezno: ['kod', 'opcije', 't', 'obj'], moguce: ['pitanje'] },
   popuni: { obavezno: ['kod', 'odg', 'obj'], moguce: ['pitanje', 'pokreni'] },
   poredaj: { obavezno: ['linije', 'obj'], moguce: ['pitanje', 'pokreni'] },
+  poredajPopuni: { obavezno: ['linije', 'odg', 'obj'], moguce: ['pitanje', 'pokreni'] },
   greska: { obavezno: ['kod', 'linija', 'obj'], moguce: ['pitanje', 'ispravno'] },
   zadatak: { obavezno: ['opis', 'pocetak', 'testovi', 'rjesenje'], moguce: ['nagovjestaji', 'objRj', 'poslije'] },
   kviz: { obavezno: ['p', 'o', 't', 'e'], moguce: [] },
@@ -42,12 +43,16 @@ export function provjeriStrukturu() {
   const { dijelovi, teme, rjecnik, dia } = ucitajLekcije();
   const greske = [], upozorenja = [], ids = new Set();
   let brojKoraka = 0;
-  for (const d of dijelovi) for (const [li, lek] of d.lekcije.entries()) {
-    const gdje0 = `${d.id}/${lek.id || '?'}`;
-    for (const p of ['id', 'naslov', 'cilj', 'koraci']) if (!lek[p]) greske.push(`${gdje0}: lekcija nema polje ${p}`);
-    if (ids.has(lek.id)) greske.push(`${gdje0}: id lekcije se ponavlja`); ids.add(lek.id);
-    if (lek.id && !lek.id.startsWith(d.id)) upozorenja.push(`${gdje0}: id lekcije ne počinje sa "${d.id}"`);
-    for (const [k, s] of (lek.koraci || []).entries()) {
+  for (const niz of nizoviKoraka({ dijelovi, teme })) {
+    const lek = niz.lek;
+    const gdje0 = lek ? `${niz.dio}/${lek.id || '?'}` : niz.id;
+    if (lek) {
+      for (const p of ['id', 'naslov', 'cilj', 'koraci']) if (!lek[p]) greske.push(`${gdje0}: lekcija nema polje ${p}`);
+      if (ids.has(lek.id)) greske.push(`${gdje0}: id lekcije se ponavlja`); ids.add(lek.id);
+      if (lek.id && !lek.id.startsWith(niz.dio)) upozorenja.push(`${gdje0}: id lekcije ne počinje sa "${niz.dio}"`);
+      if (lek.id && lek.id.startsWith('m')) greske.push(`${gdje0}: id lekcije ne smije počinjati sa "m" (to su teme)`);
+    }
+    for (const [k, s] of (niz.koraci || []).entries()) {
       brojKoraka++;
       const gdje = `${gdje0} korak ${k + 1} (${s.tip})`;
       const sh = SHEMA[s.tip];
@@ -72,8 +77,14 @@ export function provjeriStrukturu() {
         if (praznina !== (s.odg || []).length) greske.push(`${gdje}: ${praznina} praznina, a ${(s.odg || []).length} grupa odgovora`);
         for (const [i, g] of (s.odg || []).entries()) if (!Array.isArray(g) || !g.length || g.some(x => typeof x !== 'string' || !x.trim())) greske.push(`${gdje}: odg[${i}] mora biti neprazan niz tekstova`);
       }
-      if (s.tip === 'poredaj' && (!Array.isArray(s.linije) || s.linije.length < 3)) greske.push(`${gdje}: poredaj treba bar 3 linije`);
-      if (s.tip === 'poredaj' && new Set(s.linije).size !== s.linije.length) upozorenja.push(`${gdje}: iste linije se ponavljaju (više tačnih redoslijeda, a prihvata se samo jedan)`);
+      if (s.tip === 'poredajPopuni') {
+        const praznina = (s.linije || []).join('\n').split('___').length - 1;
+        if (praznina !== (s.odg || []).length) greske.push(`${gdje}: ${praznina} praznina, a ${(s.odg || []).length} grupa odgovora`);
+        if (!praznina) greske.push(`${gdje}: poredajPopuni bez praznina (koristi poredaj)`);
+        for (const [i, g] of (s.odg || []).entries()) if (!Array.isArray(g) || !g.length || g.some(x => typeof x !== 'string' || !x.trim())) greske.push(`${gdje}: odg[${i}] mora biti neprazan niz tekstova`);
+      }
+      if ((s.tip === 'poredaj' || s.tip === 'poredajPopuni') && (!Array.isArray(s.linije) || s.linije.length < 3)) greske.push(`${gdje}: poredaj treba bar 3 linije`);
+      if ((s.tip === 'poredaj' || s.tip === 'poredajPopuni') && new Set(s.linije).size !== s.linije.length) upozorenja.push(`${gdje}: iste linije se ponavljaju (više tačnih redoslijeda, a prihvata se samo jedan)`);
       if (s.tip === 'zadatak') {
         if (!Array.isArray(s.testovi) || !s.testovi.length) greske.push(`${gdje}: zadatak nema testove`);
         for (const [i, t] of (s.testovi || []).entries()) if (!t.opis || !(t.kod || t.upit !== undefined || t.ocekivano || t.kodSadrzi || TEKST_PROVJERE.some(p => t[p] !== undefined))) greske.push(`${gdje}: test ${i + 1} nema opis ili provjeru`);
@@ -98,7 +109,7 @@ export function provjeriStrukturu() {
   }
   const sveLekcije = dijelovi.flatMap(d => d.lekcije);
   for (const [t, , m] of rjecnik) if (m && !(m.startsWith('lek:') ? sveLekcije.some(l => 'lek:' + l.id === m) : teme.some(x => x.id === m))) greske.push(`rječnik ${t}: nema teme ni lekcije ${m}`);
-  return { greske, upozorenja, brojKoraka, brojLekcija: dijelovi.reduce((a, d) => a + d.lekcije.length, 0), brojTema: teme.length };
+  return { greske, upozorenja, brojKoraka, brojLekcija: dijelovi.reduce((a, d) => a + d.lekcije.length, 0), brojTema: teme.length, brojVjezbi: teme.reduce((a, t) => a + (t.koraci || []).length, 0) };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
