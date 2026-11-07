@@ -36,16 +36,14 @@ Svih pet dijelova je gotovo; svaki od Dijelova 1, 2, 3 i 5 završava projektom, 
 - Provjere rade samo u Chromiumu; broj linije greške u `dom` koraku čita V8 stek.
 - Linija SQL greške je procjena iz poruke SQLite-a.
 - Tutor (`sample`) i napredak (`db`, `user`) se ne mogu provjeriti lokalno.
-- Štampa potvrde (`window.print()`) u artefaktu nije provjerena; ako je okvir blokira, stranica kaže da se napravi
-  snimak ekrana. Novi podaci (ponavljanje, bilješke, dani…) idu u isti dokument napretka na nalogu.
+- Štampa potvrde i čuvanje napretka na nalogu rade u artefaktu (Vlado provjerio na verziji 11, 2026-11-07).
 - Tema 11: činjenice o Claude Code su iz code.claude.com/docs (2026-11-07), a za Codex iz izvornog koda
   github.com/openai/codex; alati se brzo mijenjaju, pa provjeri prije veće izmjene.
 
 ## Sljedeći korak
 
-1. Verzija 11 je objavljena (2026-11-07). Provjeriti na pravom artefaktu štampu potvrde i da se napredak (ponavljanje, bilješke) čuva na nalogu.
-2. Spojiti PR #4 kad Vlado odobri.
-3. Vježbe za ostale teme (npr. 3 Baze I, 7 Testiranje) po istom obrascu (`41-teme-vjezbe.js`).
+1. Spojiti PR #4 (i #5) kad Vlado odobri.
+2. Vježbe za ostale teme (npr. 3 Baze I, 7 Testiranje) po istom obrascu (`41-teme-vjezbe.js`).
 
 Kod iz inhome i Sole-KP citiraj samo kako stvarno piše u tim repozitorijima.
 
