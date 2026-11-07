@@ -42,7 +42,11 @@ Svih pet dijelova je gotovo; svaki od Dijelova 1, 2, 3 i 5 završava projektom, 
 
 ## Sljedeći korak
 
-1. Vlado pregleda PR i odluči o objavi nove verzije artefakta.
+1. **Objava je odobrena (Vlado, 2026-11-07)**, ali nije urađena: Artifact tool traži da se živa verzija
+   (`1794034384-5891`) prvo pročita cijela (6483 linije), a za to ova sesija nije imala mjesta. Provjereno je da je
+   živa stranica identična buildu zadane grane (`f7c9ab9`), pa uvoz nije potreban. U novoj sesiji: `Artifact read`
+   na URL, pročitati sačuvani fajl do kraja, `npm run build` na ovoj grani, pa objaviti `dist/index.html` na isti URL
+   (bez `icon` i `capabilities`).
 2. Poslije objave: provjeriti na pravom artefaktu štampu potvrde i da se napredak (ponavljanje, bilješke) čuva na nalogu.
 3. Vježbe za ostale teme (npr. 3 Baze I, 7 Testiranje) po istom obrascu (`41-teme-vjezbe.js`).
 
